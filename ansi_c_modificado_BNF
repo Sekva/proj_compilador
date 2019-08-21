@@ -53,28 +53,41 @@ Comment Line  = '//'
 <Decls> ::= <Decl> <Decls>
           |
 
+
 <Decl>  ::= <Func Decl>
           | <Var Decl>    
+
               
 ! ===================================================================
 ! Function  Declaration
 ! ===================================================================
 
-<Func Decl>  ::= <Func ID> '(' <Params>  ')' <Block>
-               | <Func ID> '(' ')' <Block>
+<Func Decl>  ::= <Func ID> '(' <Func ParamsOpt>
 
 
-<Params>     ::= <Param> ',' <Params>
-               | <Param>
+<Func ParamsOpt> ::= <Params> ')' <Block>
+	       | ')' <Block>
+
+
+<Params>     ::= <Param> <ParamsOpt>
+
+
+<ParamsOpt> ::= ',' <Params>
+	       |
+
                
-<Param>      ::= const <Type> ID
-               |       <Type> ID
-               
-<Types>      ::= <Type>  ',' <Types>
-               | <Type> 
+<Param>      ::= <Type> Id
 
-<Func ID>    ::= <Type> ID
-               | ID
+               
+<Types>      ::= <Type> <TypesOpt>
+
+
+<TypesOpt> ::= ',' <Types>
+	      |
+	       
+
+<Func ID>    ::= <Type> Id
+               | Id
 
 
 ! ===================================================================
@@ -84,12 +97,16 @@ Comment Line  = '//'
 <Var Decl>     ::= <Type> <Var> <Var List>  ';'
                  | <Var> <Var List>  ';'
              
-<Var>      ::= ID <Array>
-             | ID <Array> '=' <Op If> 
+<Var>      ::= Id <Array> <VarOpt>
 
-<Array>    ::= '[' <Expr> ']'
-             | '[' ']'
+<VarOpt>   ::= '=' <Op If>
+	     | 
+
+<Array>    ::= '[' <ArrayOpt>
              |
+
+<ArrayOpt> ::= <Expr> ']'
+	     | ']'
              
 <Var List> ::=  ',' <Var> <Var List>
              | 
@@ -114,32 +131,19 @@ Comment Line  = '//'
                | if '(' <Expr> ')' <Stm>          
                | if '(' <Expr> ')' <Then Stm> else <Stm>         
                | while '(' <Expr> ')' <Stm> 
-               | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Stm>
                | <Normal Stm>
 
 <Then Stm>   ::= if '(' <Expr> ')' <Then Stm> else <Then Stm> 
                | while '(' <Expr> ')' <Then Stm> 
-               | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Then Stm>
                | <Normal Stm>
 
-<Normal Stm> ::= do <Stm> while '(' <Expr> ')'
-               | switch '(' <Expr> ')' '{' <Case Stms> '}'
-               | <Block>
+<Normal Stm> ::= <Block>
                | <Expr> ';'               
-               | goto Id ';'
                | break ';'
                | continue ';'
                | return <Expr> ';'
                | printk '(' <Op If> ')' ';' !Op If no lugar de expr pra n ter atribuição no print
                | ';'              !Null statement
-
-
-<Arg>       ::= <Expr> 
-              | 
-
-<Case Stms> ::= case <Value> ':' <Stm List> <Case Stms>
-              | default ':' <Stm List>                  
-              |
 
 <Block>     ::= '{' <Stm List> '}' 
 
@@ -219,6 +223,8 @@ Comment Line  = '//'
                | StringLiteral
                | CharLiteral
                | FloatLiteral
+	       | 'true'
+	       ' 'false'
                | Id '(' <Expr> ')'
                | Id '(' ')'          
                | Id
