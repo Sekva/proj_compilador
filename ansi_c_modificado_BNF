@@ -1,54 +1,34 @@
-"Case Sensitive" = True
-"Start Symbol"   = <Decls>
+"Case Sensitive" : True
+"Start Symbol"   : <Decls>
 
-{Hex Digit}      = {Digit} + [abcdefABCDEF]
-{Oct Digit}      = [01234567]
+{Hex Digit}      : {Digit} + [abcdefABCDEF]
+{Oct Digit}      : [01234567]
 
-{Id Head}        = {Letter} + [_]
-{Id Tail}        = {Id Head} + {Digit}
+{Id Head}        : {Letter} + [_]
+{Id Tail}        : {Id Head} + {Digit}
 
-{String Ch}      = {Printable} - ["]
-{Char Ch}        = {Printable} - ['']
+{String Ch}      : {Printable} - ["]
+{Char Ch}        : {Printable} - ['']
 
-DecLiteral       = [123456789]{digit}*
-OctLiteral       = 0{Oct Digit}*
-HexLiteral       = 0x{Hex Digit}+
-FloatLiteral     = {Digit}*'.'{Digit}+
+DecLiteral       : [123456789]{digit}*
+OctLiteral       : 0{Oct Digit}*
+HexLiteral       : 0x{Hex Digit}+
+FloatLiteral     : {Digit}*'.'{Digit}+
 
-StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'
-CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
+StringLiteral    : '"'( {String Ch} | '\'{Printable} )* '"'
+CharLiteral      : '' ( {Char Ch} | '\'{Printable} )''
 
-Id               = {Id Head}{Id Tail}*
+Id               : {Id Head}{Id Tail}*
+
+
+<BoolLiteral> ::= 'true'
+		| 'false'
 
 
 ! ===================================================================
-! Comments
+! Declarations
 ! ===================================================================
 
-Comment Start = '/*'
-Comment End   = '*/'
-Comment Line  = '//'
-
-
-! Typically, C comments cannot be nested. As a result, the 
-! Comment Start and Comment End terminals cannot be used.
-!
-! To implement non-nested comments, the whitespace terminal is
-! modified to accept them. In the definition below, Whitespace 
-! is defined as one or more {Whitespace} characters OR a series
-! of characters delimited by /* and */. Note that the characters
-! between the two delimiters cannot contain the */ sequence. 
-!
-! Uncomment the following to prevent block commments. Make sure 
-! to comment the Comment Start and Comment End definitions.
-!
-! {Non Slash}     = {Printable} - [/]  
-! {Non Asterisk}  = {Printable} - [*]
-! 
-! Whitespace     = {Whitespace}+   
-!                | '/*' (  {Non Asterisk} | '*' {Non Slash}? )*  '*/'
-
-!=======================================================
 
 <Decls> ::= <Decl> <Decls>
           |
@@ -57,47 +37,45 @@ Comment Line  = '//'
 <Decl>  ::= <Func Decl>
           | <Var Decl>    
 
-              
+
 ! ===================================================================
 ! Function  Declaration
 ! ===================================================================
 
-<Func Decl>  ::= <Func ID> '(' <Func ParamsOpt>
+<Func Decl>      ::= <Func Id> '(' <Func ParamsOpt>
 
 
 <Func ParamsOpt> ::= <Params> ')' <Block>
-	       | ')' <Block>
+                   | ')' <Block>
 
 
-<Params>     ::= <Param> <ParamsOpt>
+<Params>         ::= <Param> <ParamsOpt>
 
 
-<ParamsOpt> ::= ',' <Params>
-	       |
-
-               
-<Param>      ::= <Type> Id
+<ParamsOpt>      ::= ',' <Params>
+	           |
 
                
-<Types>      ::= <Type> <TypesOpt>
+<Param>          ::= <Type> <Id>
+
+               
+<Types>          ::= <Type> <TypesOpt>
 
 
-<TypesOpt> ::= ',' <Types>
-	      |
+<TypesOpt>       ::= ',' <Types>
+	           |
 	       
 
-<Func ID>    ::= <Type> Id
-               | Id
-
+<Func Id>        ::= <Type> <Id>
 
 ! ===================================================================
 ! Variable Declaration
 ! ===================================================================
 
-<Var Decl>     ::= <Type> <Var> <Var List>  ';'
-                 | <Var> <Var List>  ';'
+<Var Decl> ::= <Type> <Var> <Var List>  ';'
+             | <Var> <Var List>  ';'
              
-<Var>      ::= Id <Array> <VarOpt>
+<Var>      ::= <Id> <Array> <VarOpt>
 
 <VarOpt>   ::= '=' <Op If>
 	     | 
@@ -106,7 +84,7 @@ Comment Line  = '//'
              |
 
 <ArrayOpt> ::= <Expr> ']'
-	     | ']'
+ 	     | ']'
              
 <Var List> ::=  ',' <Var> <Var List>
              | 
@@ -116,47 +94,60 @@ Comment Line  = '//'
 ! ===================================================================
 
 <Type>   ::= char
-             | str
-             | int
-             | float
-             | void           
-             | bool           
+           | str
+           | int
+           | float
+           | void           
+           | bool           
 
 ! ===================================================================
 ! Statements
 ! ===================================================================
 
 <Stm>        ::= <Var Decl>
-               | Id ':'                            !Label
-               | if '(' <Expr> ')' <Stm>          
-               | if '(' <Expr> ')' <Then Stm> else <Stm>         
-               | while '(' <Expr> ')' <Stm> 
+               | <Id> ':'                            !Label
+               | 'if' '(' <Expr> ')' <IfOpt>          
+               | 'while' '(' <Expr> ')' <Stm> 
                | <Normal Stm>
 
-<Then Stm>   ::= if '(' <Expr> ')' <Then Stm> else <Then Stm> 
-               | while '(' <Expr> ')' <Then Stm> 
+
+<IfOpt>      ::= <Then Stm> 'else' <Stm>
+	       | <Stm>
+
+
+<Then Stm>   ::= 'if' '(' <Expr> ')' <Then Stm> 'else' <Then Stm> 
+               | 'while' '(' <Expr> ')' <Then Stm>
                | <Normal Stm>
 
 <Normal Stm> ::= <Block>
                | <Expr> ';'               
-               | break ';'
-               | continue ';'
-               | return <Expr> ';'
-               | printk '(' <Op If> ')' ';' !Op If no lugar de expr pra n ter atribuição no print
+               | 'break' ';'
+               | 'continue' ';'
+               | 'return' <Expr> ';'
+               | 'printk' '(' <Op If> ')' ';' !Op If no lugar de expr pra n ter atribuição no print
                | ';'              !Null statement
 
-<Block>     ::= '{' <Stm List> '}' 
+<Block>      ::= '{' <Stm List> '}' 
 
-<Stm List>  ::=  <Stm> <Stm List> 
-              | 
+<Stm List>   ::=  <Stm> <Stm List> 
+               | 
 
 
 ! ===================================================================
 ! Here begins the C's 15 levels of operator precedence.
 ! ===================================================================
 
-<Expr>       ::= <Expr> ',' <Op Assign>   
-               | <Op Assign>
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+<Expr>       ::= <Op Assign>
+	       | <Op Assing> <ExprRec>
+
+<ExprRec>    ::= ',' <Op Assing>
+	       | ',' <Op Assing> <ExprRec>
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 <Op Assign>  ::= <Op If> '='   <Op Assign>
                | <Op If> '+='  <Op Assign>
@@ -170,27 +161,50 @@ Comment Line  = '//'
                | <Op If> '<<=' <Op Assign>
                | <Op If>
 
+
 <Op If>      ::= <Op Or> '?' <Op If> ':' <Op If>
                | <Op Or>
 
-<Op Or>      ::= <Op Or> '||' <Op And>
-               | <Op And>
 
-<Op And>     ::= <Op And> '&&' <Op BinOR>
-               | <Op BinOR>
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+<Op Or>      ::= <Op And>
+	       | <Op And> <OpOrRec>
+
+<OpOrRec>    ::= <Op Or> '||' <Op And>
+	       | <Op Or> '||' <Op And> <OpOrRec>
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+<Op And>     ::= <Op BinOr>
+	       | <Op BinOr> <OpAndRec>
+
+<OpAndRec>   ::= <Op And> '&&' <Op BinOr>
+	       | <Op And> '&&' <Op BinOr> <OpAndRec>
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 <Op BinOR>   ::= <Op BinOr> '|' <Op BinXOR>
                | <Op BinXOR>
 
+
 <Op BinXOR>  ::= <Op BinXOR> '^' <Op BinAND>
                | <Op BinAND>
+
 
 <Op BinAND>  ::= <Op BinAND> '&' <Op Equate>
                | <Op Equate>
 
+
 <Op Equate>  ::= <Op Equate> '==' <Op Compare>
                | <Op Equate> '!=' <Op Compare>
                | <Op Compare>
+
 
 <Op Compare> ::= <Op Compare> '<'  <Op Shift>
                | <Op Compare> '>'  <Op Shift>
@@ -198,14 +212,17 @@ Comment Line  = '//'
                | <Op Compare> '>=' <Op Shift>
                | <Op Add>
 
+
 <Op Add>     ::= <Op Add> '+' <Op Mult>
                | <Op Add> '-' <Op Mult>
                | <Op Mult>
+
 
 <Op Mult>    ::= <Op Mult> '*' <Op Unary>
                | <Op Mult> '/' <Op Unary>
                | <Op Mult> '%' <Op Unary>
                | <Op Unary>
+
 
 <Op Unary>   ::= '!'    <Op Unary>
                | '~'    <Op Unary>   
@@ -217,15 +234,15 @@ Comment Line  = '//'
                | '(' <Type> ')' <Op Unary>   !CAST
                | <Value>
 
-<Value>      ::= OctLiteral
-               | HexLiteral
-               | DecLiteral  
-               | StringLiteral
-               | CharLiteral
-               | FloatLiteral
-	       | 'true'
-	       ' 'false'
-               | Id '(' <Expr> ')'
-               | Id '(' ')'          
-               | Id
+
+<Value>      ::= <OctLiteral>
+               | <HexLiteral>
+               | <DecLiteral>  
+               | <StringLiteral>
+               | <CharLiteral>
+               | <FloatLiteral>
+	       | <BoolLiteral>
+               | <Id> '(' <Expr> ')'
+               | <Id> '(' ')'          
+               | <Id>
                | '(' <Expr> ')'
