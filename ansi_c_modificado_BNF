@@ -1,14 +1,9 @@
-"Case Sensitive" : True
-"Start Symbol"   : <Decls>
-
-
-
-
 <Decls> ::= <Decl> <Decls>
           | <PalavraVazia>
 
 <Decl> ::= <Func Decl>
-          | <Var Decl>
+         | <Var Decl>
+
 
 
 
@@ -18,37 +13,19 @@
 <Func ParamsOpt> ::= <Params> ")" <Block>
                    | ")" <Block>
 
-
 <Params> ::= <Param> <ParamsOpt>
 
+<ParamsOpt> ::= "," <Params>
+              | <PalavraVazia>
 
-<ParamsOpt>      ::= "," <Params>
-	           | <PalavraVazia>
+<Param> ::= <Type> <Id>
 
+<Types> ::= <Type> <TypesOpt>
 
+<TypesOpt> ::= "," <Types>
+             | <PalavraVazia>
 
-<Param>          ::= <Type> <Id>
-
-
-<Types>          ::= <Type> <TypesOpt>
-
-
-<TypesOpt>       ::= "," <Types>
-	           | <PalavraVazia>
-
-
-
-<Func Id>        ::= <Type> <Id>
-
-
-
-
-
-
-
-
-
-
+<Func Id> ::= <Type> <Id>
 
 
 
@@ -57,18 +34,16 @@
 <Var Decl> ::= <Type> <Var> <Var List>  ";"
              | <Var> <Var List>  ";"
 
-<Var>      ::= <Id> <Array> <VarOpt>
+<Var> ::= <Id> <Array> <VarOpt>
 
-<VarOpt>   ::= "=" <Op If>
-	     |  <PalavraVazia>
+<VarOpt> ::= "=" <Op If>
+           |  <PalavraVazia>
 
-
-<Array>    ::= "[" <ArrayOpt>
-             | <PalavraVazia>
-
+<Array> ::= "[" <ArrayOpt>
+          | <PalavraVazia>
 
 <ArrayOpt> ::= <Expr> "]"
- 	     | "]"
+             | "]"
 
 <Var List> ::=  "," <Var> <Var List>
              |  <PalavraVazia>
@@ -77,50 +52,29 @@
 
 
 
+<Type> ::= "char"
+         | "str"
+         | "int"
+         | "float"
+         | "void"
+         | "bool"
 
 
 
 
 
+<Stm> ::= <Var Decl>
+        | "if" "(" <Expr> ")" <IfOpt>
+        | "while" "(" <Expr> ")" <Stm>
+        | <Normal Stm>
+
+<IfOpt> ::= <Then Stm> "else" <Stm>
+          | <Stm>
 
 
-
-
-<Type>   ::= "char"
-           | "str"
-           | "int"
-           | "float"
-           | "void"
-           | "bool"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<Stm>        ::= <Var Decl>
-               | "if" "(" <Expr> ")" <IfOpt>
-               | "while" "(" <Expr> ")" <Stm>
-               | <Normal Stm>
-
-
-<IfOpt>      ::= <Then Stm> "else" <Stm>
-	       | <Stm>
-
-
-<Then Stm>   ::= "if" "(" <Expr> ")" <Then Stm> "else" <Then Stm>
-               | "while" "(" <Expr> ")" <Then Stm>
-               | <Normal Stm>
+<Then Stm> ::= "if" "(" <Expr> ")" <Then Stm> "else" <Then Stm>
+             | "while" "(" <Expr> ")" <Then Stm>
+             | <Normal Stm>
 
 <Normal Stm> ::= <Block>
                | <Expr> ";"
@@ -130,228 +84,138 @@
                | "printk" "(" <Op If> ")" ";" !Op If no lugar de expr pra n ter atribuição no print
                | ";"              !Null statement
 
-<Block>      ::= "{" <Stm List> "}"
+<Block> ::= "{" <Stm List> "}"
 
-<Stm List>   ::=  <Stm> <Stm List>
+<Stm List> ::=  <Stm> <Stm List>
+             | <PalavraVazia>
+
+
+
+
+
+<Expr> ::= <Op Assign> <ExprOpt>
+
+<ExprRec> ::= "," <Op Assing> <ExprRecOpt>
+
+<ExprOpt> ::= <ExprRec>
+            | <PalavraVazia>
+
+<ExprRecOpt> ::= <ExprRec>
                | <PalavraVazia>
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-<Expr>       ::= <Op Assign> <ExprOpt>
-
-<ExprRec>    ::= "," <Op Assing> <ExprRecOpt>
-
-<ExprOpt> ::= <ExprRec>
-	    | <PalavraVazia>
-
-<ExprRecOpt> ::= <ExprRec>
-	       | <PalavraVazia>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<Op Assign>  ::= <Op If> <Op AssignOpt2>
-
+<Op Assign> ::= <Op If> <Op AssignOpt2>
 
 <Op AssignOpt2> ::= <OpAssignOpt>
-		  | <PalavraVazia>
-
-<Op AssignOpt>  ::= "="   <Op Assign>
-                  | "+="  <Op Assign>
-                  | "-="  <Op Assign>
-                  | "*="  <Op Assign>
-                  | "/="  <Op Assign>
-                  | "^="  <Op Assign>
-                  | "&="  <Op Assign>
-                  | "|="  <Op Assign>
-
-
-
-
-
-
-
-
-
-
-
-<Op If>      ::= <Op Or> <Op IfOpt>
-
-<Op IfOpt>      ::= "?" <Op If> ":" <Op If>
                   | <PalavraVazia>
 
+<Op AssignOpt> ::= "="   <Op Assign>
+                 | "+="  <Op Assign>
+                 | "-="  <Op Assign>
+                 | "*="  <Op Assign>
+                 | "/="  <Op Assign>
+                 | "^="  <Op Assign>
+                 | "&="  <Op Assign>
+                 | "|="  <Op Assign>
 
 
 
 
 
+<Op If> ::= <Op Or> <Op IfOpt>
+
+<Op IfOpt> ::= "?" <Op If> ":" <Op If>
+             | <PalavraVazia>
 
 
 
 
 
-<Op Or>      ::= <Op And> <OpOrOpt>
+<Op Or> ::= <Op And> <OpOrOpt>
 
-<OpOrRec>    ::= <Op Or> "||" <Op And> <OpOrRecOpt>
+<OpOrRec> ::= <Op Or> "||" <Op And> <OpOrRecOpt>
 
 <OpOrOpt> ::= <OpOrRec>
-	     | <PalavraVazia>
+            | <PalavraVazia>
 
 <OpOrRecOpt> ::= <OpOrRec>
-	       | <PalavraVazia>
+               | <PalavraVazia>
 
 
 
 
 
+<Op And> ::= <Op BinOr> <Op AndOpt>
 
+<OpAndRec> ::= <Op And> "&&" <Op BinOr> <OpAndRecOpt>
 
-
-
-
-
-
-
-<Op And>     ::= <Op BinOr> <Op AndOpt>
-
-<OpAndRec>   ::= <Op And> "&&" <Op BinOr> <OpAndRecOpt>
-
-<Op AndOpt>  ::= <OpAndRec>
-	       | <PalavraVazia>
+<Op AndOpt> ::= <OpAndRec>
+              | <PalavraVazia>
 
 <OpAndRecOpt> ::= <OpAndRec>
-		| <PalavraVazia>
+                | <PalavraVazia>
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-<Op BinOr>    ::= <Op BinXOR> <Op BinOrOpt>
+<Op BinOr> ::= <Op BinXOR> <Op BinOrOpt>
 
 <Op BinOrOpt> ::= <Op BinOrRec>
-		| <PalavraVazia>
+                | <PalavraVazia>
 
 <Op BinOrRec> ::= <Op BinOr> "|" <Op BinXOR> <Op BinOrRecOpt>
 
-
 <Op BinOrRecOpt> ::= <Op BinOrRec>
-		   | <PalavraVazia>
+                   | <PalavraVazia>
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-<Op BinXOR>   ::= <Op BinAND> <Op BinXOROpt>
-
+<Op BinXOR> ::= <Op BinAND> <Op BinXOROpt>
 
 <Op BinXOROpt> ::= <Op BinXORRec>
-		 | <PalavraVazia>
+                 | <PalavraVazia>
 
 <Op BinXORRec> ::= <Op BinXOR> "^" <OpBinAND> <Op BinXORRecOpt>
 
 <Op BinXORRecOpt> ::= <Op BinXORRec>
-		    | <PalavraVazia>
+                    | <PalavraVazia>
 
 
 
 
 
-
-
-
-
-
-
-
-<Op BinAND>  ::= <Op Equate> <Op BinANDOpt>
-
+<Op BinAND> ::= <Op Equate> <Op BinANDOpt>
 
 <Op BinANDOpt>  ::= <Op BinANDRec>
-	       |  <PalavraVazia>
+                  |  <PalavraVazia>
 
 <Op BinANDRec> ::= <Op BinAND> "&" <Op Equate> <Op BinANDRecOpt>
 
-
 <Op BinANDRecOpt> ::= <Op BinANDRec>
-		    | <PalavraVazia>
+                    | <PalavraVazia>
 
 
 
 
 
-
-
-
-
-
-
-
-<Op Equate>  ::= <Op Compare> <Op EquateOpt2>
-
+<Op Equate> ::= <Op Compare> <Op EquateOpt2>
 
 <Op EquateOpt2> ::= <Op EquateRec>
-		  | <PalavraVazia>
-
+                  | <PalavraVazia>
 
 <Op EquateRec> ::= <Op Equate> <Op EquateOpt> <Op EquateRecOpt>
 
-
 <Op EquateRecOpt> ::= <Op EquateRec>
-		    | <PalavraVazia>
-
+                    | <PalavraVazia>
 
 <Op EquateOpt> ::= "==" <Op Compare>
-		 | "!=" <Op Compare>
-
-
-
-
-
+                 | "!=" <Op Compare>
 
 
 
@@ -359,50 +223,36 @@
 
 <Op Compare> ::= <Op Add> <Op CompareOpt2>
 
-
 <Op CompareOpt2> ::= <Op CompareRec>
-		   | <PalavraVazia>
-
+                   | <PalavraVazia>
 
 <Op CompareRec> ::= <Op Compare> <Op CompareOpt> <Op CompareRecOpt>
 
-
 <Op CompareRecOpt> ::= <Op CompareRec>
-		     |  <PalavraVazia>
+                     |  <PalavraVazia>
 
 
 <Op CompareOpt> ::= "<" <Op Add>
-		  | ">" <Op Add>
-		  | "<=" <Op Add>
-		  | ">=" <Op Add>
+                  | ">" <Op Add>
+                  | "<=" <Op Add>
+                  | ">=" <Op Add>
 
 
 
 
 
-
-
-
-<Op Add>     ::= <Op Mult> <Op AddOpt2>
-
+<Op Add> ::= <Op Mult> <Op AddOpt2>
 
 <Op AddOpt2> ::= <Op AddRec>
-	       | <PalavraVazia>
+               | <PalavraVazia>
 
 <Op AddRec>  ::= <Op Add> <Op AddOpt> <Op AddRecOpt>
 
-
 <Op AddRecOpt> ::= <Op AddRec>
-		 | <PalavraVazia>
-
+                 | <PalavraVazia>
 
 <Op AddOpt>  ::= "+" <Op Mult>
-	       | "-" <Op Mult>
-
-
-
-
-
+               | "-" <Op Mult>
 
 
 
@@ -410,44 +260,29 @@
 
 <Op Mult> ::= <Op Unary> <Op MultOpt2>
 
-
 <Op MultRec> ::= <Op Mult> <Op MultOpt> <Op MultRecOpt>
 
-
 <Op MultRecOpt> ::= <Op MultRec>
-		  |  <PalavraVazia>
-
+                  |  <PalavraVazia>
 
 <Op MultOpt> ::= "*" <Op Unary>
-	       | "/" <Op Unary>
-	       | "%" <Op Unary>
-
+               | "/" <Op Unary>
+               | "%" <Op Unary>
 
 <Op MultOpt2> ::= <Op MultRec>
-		|  <PalavraVazia>
+                | <PalavraVazia>
 
 
 
 
 
-
-
-
-
-
-
-<Op Unary> ::= "!"    <Op Unary>
-             | "~"    <Op Unary>
-             | "-"    <Op Unary>
-             | "*"    <Op Unary>
-             | "++"   <Op Unary>
-             | "--"   <Op Unary>
+<Op Unary> ::= "!"  <Op Unary>
+             | "~"  <Op Unary>
+             | "-"  <Op Unary>
+             | "*"  <Op Unary>
+             | "++" <Op Unary>
+             | "--" <Op Unary>
              | <Value>
-
-
-
-
-
 
 
 
@@ -459,191 +294,170 @@
           | <StringLiteral>
           | <CharLiteral>
           | <FloatLiteral>
-	  | <BoolLiteral>
+          | <BoolLiteral>
           | <Id> <Id Opt>
           | "(" <Expr> ")"
 
 <Id Opt> ::= "(" <Id Opt2>
-	   | <PalavraVazia>
+           | <PalavraVazia>
 
 <Id Opt2> ::= <Expr> ")"
-	    | ")"
+            | ")"
 
 
 
 
 
+<PalavraVazia> ::= ""
+
+<Hex Digit> ::= <Digit> <Hex Digit>
+              | <Hex Letter> <Hex Digit>
+              | <PalavraVazia>
+
+<Hex Letter> ::= "a" <Hex Letter>
+               | "b" <Hex Letter>
+               | "c" <Hex Letter>
+               | "d" <Hex Letter>
+               | "e" <Hex Letter>
+               | "f" <Hex Letter>
+               | "A" <Hex Letter>
+               | "B" <Hex Letter>
+               | "C" <Hex Letter>
+               | "D" <Hex Letter>
+               | "E" <Hex Letter>
+               | "F" <Hex Letter>
+               | <PalavraVazia>
+
+<Oct Digit> ::= "0" <Oct Digit>
+              | "1" <Oct Digit>
+              | "2" <Oct Digit>
+              | "3" <Oct Digit>
+              | "4" <Oct Digit>
+              | "5" <Oct Digit>
+              | "6" <Oct Digit>
+              | "7" <Oct Digit>
+              | <PalavraVazia>
+
+<DecLiteral> ::= "1" <Digit>
+               | "2" <Digit>
+               | "3" <Digit>
+               | "4" <Digit>
+               | "5" <Digit>
+               | "6" <Digit>
+               | "7" <Digit>
+               | "8" <Digit>
+               | "9" <Digit>
+
+<Digit> ::= "0" <Digit>
+          | "1" <Digit>
+          | "2" <Digit>
+          | "3" <Digit>
+          | "4" <Digit>
+          | "5" <Digit>
+          | "6" <Digit>
+          | "7" <Digit>
+          | "8" <Digit>
+          | "9" <Digit>
+          | <PalavraVazia>
+
+<Digit2> ::= "0"
+           | "1"
+           | "2"
+           | "3"
+           | "4"
+           | "5"
+           | "6"
+           | "7"
+           | "8"
+           | "9"
+
+<DigitF> ::= "0" <Digit>
+           | "1" <Digit>
+           | "2" <Digit>
+           | "3" <Digit>
+           | "4" <Digit>
+           | "5" <Digit>
+           | "6" <Digit>
+           | "7" <Digit>
+           | "8" <Digit>
+           | "9" <Digit>
 
 
+<OctLiteral> ::= "0" <Oct Digit>
 
-			<PalavraVazia> ::= ""
+<HexLiteral> ::= "0x" <Hex Digit>
 
+<FloatLiteral> ::= <Digit> "." <DigitF>
 
-			<Hex Digit> ::= <Digit> <Hex Digit>
-				      | <Hex Letter> <Hex Digit>
-				      | <PalavraVazia>
+<StringLiteral> ::= """ <LetterArray> """
 
-			<Hex Letter> ::= "a" <Hex Letter>
-				       | "b" <Hex Letter>
-				       | "c" <Hex Letter>
-				       | "d" <Hex Letter>
-				       | "e" <Hex Letter>
-				       | "f" <Hex Letter>
-				       | "A" <Hex Letter>
-				       | "B" <Hex Letter>
-				       | "C" <Hex Letter>
-				       | "D" <Hex Letter>
-				       | "E" <Hex Letter>
-				       | "F" <Hex Letter>
-				       | <PalavraVazia>
+<LetterArray> ::= <Letter> <LetterArray>
+                | <Digit> <LetterArray>
+                | <PalavraVazia>
 
+<CharLiteral> ::= "'" <Letter> "'"
+                | "'" <Digit2> "'"
 
+<Id Head> ::= <Letter>
+            | "_"
 
-			<Oct Digit> ::= "0" <Oct Digit>
-				      | "1" <Oct Digit>
-				      | "2" <Oct Digit>
-				      | "3" <Oct Digit>
-				      | "4" <Oct Digit>
-				      | "5" <Oct Digit>
-				      | "6" <Oct Digit>
-				      | "7" <Oct Digit>
-				      | <PalavraVazia>
+<Id Tail> ::= <Id Head> <Id Tail>
+            | <PalavraVazia>
 
+<Id> ::= <Id Head> <Id Tail>
 
+<Letter> ::= "a"
+           | "b"
+           | "c"
+           | "d"
+           | "e"
+           | "f"
+           | "g"
+           | "h"
+           | "i"
+           | "j"
+           | "k"
+           | "l"
+           | "m"
+           | "n"
+           | "o"
+           | "p"
+           | "q"
+           | "r"
+           | "s"
+           | "t"
+           | "u"
+           | "v"
+           | "w"
+           | "x"
+           | "y"
+           | "z"
+           | "A"
+           | "B"
+           | "C"
+           | "D"
+           | "E"
+           | "F"
+           | "G"
+           | "H"
+           | "I"
+           | "J"
+           | "K"
+           | "L"
+           | "M"
+           | "N"
+           | "O"
+           | "P"
+           | "Q"
+           | "R"
+           | "S"
+           | "T"
+           | "U"
+           | "V"
+           | "W"
+           | "X"
+           | "Y"
+           | "Z"
 
-			<DecLiteral> ::= "1" <Digit>
-				       | "2" <Digit>
-				       | "3" <Digit>
-				       | "4" <Digit>
-				       | "5" <Digit>
-				       | "6" <Digit>
-				       | "7" <Digit>
-				       | "8" <Digit>
-				       | "9" <Digit>
-
-
-			<Digit> ::= "0" <Digit>
-				  | "1" <Digit>
-				  | "2" <Digit>
-				  | "3" <Digit>
-				  | "4" <Digit>
-				  | "5" <Digit>
-				  | "6" <Digit>
-				  | "7" <Digit>
-				  | "8" <Digit>
-				  | "9" <Digit>
-				  | <PalavraVazia>
-
-
-
-
-			<Digit2> ::= "0"
-				   | "1"
-				   | "2"
-				   | "3"
-				   | "4"
-				   | "5"
-				   | "6"
-				   | "7"
-				   | "8"
-				   | "9"
-
-
-			<DigitF> ::= "0" <Digit>
-				   | "1" <Digit>
-				   | "2" <Digit>
-				   | "3" <Digit>
-				   | "4" <Digit>
-				   | "5" <Digit>
-				   | "6" <Digit>
-				   | "7" <Digit>
-				   | "8" <Digit>
-				   | "9" <Digit>
-
-
-			<OctLiteral> ::= "0" <Oct Digit>
-
-
-			<HexLiteral> ::= "0x" <Hex Digit>
-
-			<FloatLiteral> ::= <Digit> "." <DigitF>
-
-
-			<StringLiteral> ::= """ <LetterArray> """
-
-			<LetterArray> ::= <Letter> <LetterArray>
-					| <Digit> <LetterArray>
-					| <PalavraVazia>
-
-
-			<CharLiteral> ::= "'" <Letter> "'"
-					| "'" <Digit2> "'"
-
-
-			<Id Head> ::= <Letter>
-				    | "_"
-
-			<Id Tail> ::= <Id Head> <Id Tail>
-				    | <PalavraVazia>
-
-
-			<Id> ::= <Id Head> <Id Tail>
-
-
-			<Letter> ::= "a"
-				   | "b"
-				   | "c"
-				   | "d"
-				   | "e"
-				   | "f"
-				   | "g"
-				   | "h"
-				   | "i"
-				   | "j"
-				   | "k"
-				   | "l"
-				   | "m"
-				   | "n"
-				   | "o"
-				   | "p"
-				   | "q"
-				   | "r"
-				   | "s"
-				   | "t"
-				   | "u"
-				   | "v"
-				   | "w"
-				   | "x"
-				   | "y"
-				   | "z"
-				   | "A"
-				   | "B"
-				   | "C"
-				   | "D"
-				   | "E"
-				   | "F"
-				   | "G"
-				   | "H"
-				   | "I"
-				   | "J"
-				   | "K"
-				   | "L"
-				   | "M"
-				   | "N"
-				   | "O"
-				   | "P"
-				   | "Q"
-				   | "R"
-				   | "S"
-				   | "T"
-				   | "U"
-				   | "V"
-				   | "W"
-				   | "X"
-				   | "Y"
-				   | "Z"
-
-
-
-			<BoolLiteral> ::= "true"
-					| "false"
+<BoolLiteral> ::= "true"
+                | "false"
