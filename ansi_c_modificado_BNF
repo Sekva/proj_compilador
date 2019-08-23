@@ -20,11 +20,6 @@
 
 <Param> ::= <Type> <Id>
 
-<Types> ::= <Type> <TypesOpt>
-
-<TypesOpt> ::= "," <Types>
-             | <PalavraVazia>
-
 <Func Id> ::= <Type> <Id>
 
 
