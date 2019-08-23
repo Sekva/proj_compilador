@@ -81,8 +81,8 @@
                | "break" ";"
                | "continue" ";"
                | "return" <Expr> ";"
-               | "printk" "(" <Op If> ")" ";" !Op If no lugar de expr pra n ter atribuição no print
-               | ";"              !Null statement
+               | "printk" "(" <Op If> ")" ";"
+               | ";"
 
 <Block> ::= "{" <Stm List> "}"
 
