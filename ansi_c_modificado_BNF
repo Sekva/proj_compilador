@@ -95,7 +95,7 @@
 
 <Expr> ::= <Op Assign> <ExprOpt>
 
-<ExprRec> ::= "," <Op Assing> <ExprRecOpt>
+<ExprRec> ::= "," <Op Assign> <ExprRecOpt>
 
 <ExprOpt> ::= <ExprRec>
             | <PalavraVazia>
