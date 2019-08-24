@@ -29,16 +29,10 @@
 <Var Decl> ::= <Type> <Var> <Var List>  ";"
              | <Var> <Var List>  ";"
 
-<Var> ::= <Id> <Array> <VarOpt>
+<Var> ::= <Id> <VarOpt>
 
 <VarOpt> ::= "=" <Op If>
            |  <PalavraVazia>
-
-<Array> ::= "[" <ArrayOpt>
-          | <PalavraVazia>
-
-<ArrayOpt> ::= <Expr> "]"
-             | "]"
 
 <Var List> ::=  "," <Var> <Var List>
              |  <PalavraVazia>
