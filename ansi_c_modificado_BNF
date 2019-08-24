@@ -277,106 +277,42 @@
             | ")"
 
 
-
-
-
-<PalavraVazia> ::= ""
-
-<Hex Digit> ::= <Digit> <Hex Digit>
-              | <Hex Letter> <Hex Digit>
-              | <PalavraVazia>
-
-<Hex Letter> ::= "a" <Hex Letter>
-               | "b" <Hex Letter>
-               | "c" <Hex Letter>
-               | "d" <Hex Letter>
-               | "e" <Hex Letter>
-               | "f" <Hex Letter>
-               | "A" <Hex Letter>
-               | "B" <Hex Letter>
-               | "C" <Hex Letter>
-               | "D" <Hex Letter>
-               | "E" <Hex Letter>
-               | "F" <Hex Letter>
-               | <PalavraVazia>
-
-<Oct Digit> ::= "0" <Oct Digit>
-              | "1" <Oct Digit>
-              | "2" <Oct Digit>
-              | "3" <Oct Digit>
-              | "4" <Oct Digit>
-              | "5" <Oct Digit>
-              | "6" <Oct Digit>
-              | "7" <Oct Digit>
-              | <PalavraVazia>
-
-<DecLiteral> ::= "1" <Digit>
-               | "2" <Digit>
-               | "3" <Digit>
-               | "4" <Digit>
-               | "5" <Digit>
-               | "6" <Digit>
-               | "7" <Digit>
-               | "8" <Digit>
-               | "9" <Digit>
-
-<Digit> ::= "0" <Digit>
-          | "1" <Digit>
-          | "2" <Digit>
-          | "3" <Digit>
-          | "4" <Digit>
-          | "5" <Digit>
-          | "6" <Digit>
-          | "7" <Digit>
-          | "8" <Digit>
-          | "9" <Digit>
-          | <PalavraVazia>
-
-<Digit2> ::= "0"
-           | "1"
-           | "2"
-           | "3"
-           | "4"
-           | "5"
-           | "6"
-           | "7"
-           | "8"
-           | "9"
-
-<DigitF> ::= "0" <Digit>
-           | "1" <Digit>
-           | "2" <Digit>
-           | "3" <Digit>
-           | "4" <Digit>
-           | "5" <Digit>
-           | "6" <Digit>
-           | "7" <Digit>
-           | "8" <Digit>
-           | "9" <Digit>
-
-
-<OctLiteral> ::= "0" <Oct Digit>
-
-<HexLiteral> ::= "0x" <Hex Digit>
-
-<FloatLiteral> ::= <Digit> "." <DigitF>
-
-<StringLiteral> ::= """ <LetterArray> """
-
-<LetterArray> ::= <Letter> <LetterArray>
-                | <Digit> <LetterArray>
-                | <PalavraVazia>
-
-<CharLiteral> ::= "'" <Letter> "'"
-                | "'" <Digit2> "'"
-
 <Id Head> ::= <Letter>
             | "_"
 
-<Id Tail> ::= <Id Head> <Id Tail>
-            | <PalavraVazia>
+<Id Tail> ::= <Id Head>
+            | <Digit>
 
 <Id> ::= <Id Head> <Id Tail>
+
+
+<DecLiteral> ::= <Digit> <DecLiteralOpt>
+
+<DecLiteralOpt> ::= <DecLiteral>
+                  | <PalavraVazia>
+
+
+
+<HexLiteral> ::= "0x" <Hex Number>
+<BoolLiteral> ::= "true"
+                | "false"
+
+<OctLiteral> ::= "0" <Oct Number>
+
+<FloatLiteral> ::= <DecLiteral> "." <DecLiteral>
+
+<StringLiteral> ::= """ <CharArray> """
+
+<CharArray> ::= <Letter> <CharArray>
+              | <Digit> <CharArray>
+              | <PalavraVazia>
+
+
+<CharLiteral> ::= "'" <CharLiteralOpt> "'"
+
+<CharLiteralOpt> ::= <Letter>
+                   | <Digit>
+
 
 <Letter> ::= "a"
            | "b"
@@ -431,5 +367,59 @@
            | "Y"
            | "Z"
 
-<BoolLiteral> ::= "true"
-                | "false"
+
+<Oct Number> ::= <Octal Digit>
+               | <Octal Digit> <Oct NumberRec>
+
+<Oct NumberRec> ::= <Oct Number> <Octal Digit> <Oct NumberRecOpt>
+
+<Oct NumberRecOpt> ::= <Oct NumberRec>
+                     | <PalavraVazia>
+
+<Octal Digit> ::= "0"
+                | "1"
+                | "2"
+                | "3"
+                | "4"
+                | "5"
+                | "6"
+                | "7"
+
+<Hex Number> ::= <Hex Letter>
+               | <Digit>
+               | <Hex Letter> <Hex NumberRec>
+               | <Digit> <Hex NumberRec>
+
+<Hex NumberRec> ::= <Hex Number> <Hex NumberOpt> <Hex NumberRecOpt>
+
+<Hex NumberRecOpt> ::= <Hex NumberRec>
+                     | <PalavraVazia>
+
+<Hex NumberOpt> ::= <Digit>
+                  | <Hex Letter>
+
+<Hex Letter> ::= "a"
+               | "b"
+               | "c"
+               | "d"
+               | "e"
+               | "f"
+               | "A"
+               | "B"
+               | "C"
+               | "D"
+               | "E"
+               | "F"
+
+<Digit> ::= "0"
+          | "1"
+          | "2"
+          | "3"
+          | "4"
+          | "5"
+          | "6"
+          | "7"
+          | "8"
+          | "9"
+
+<PalavraVazia> ::= ""
