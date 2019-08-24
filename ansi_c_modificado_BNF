@@ -98,7 +98,7 @@
 
 <Op Assign> ::= <Op Or> <Op AssignOpt2>
 
-<Op AssignOpt2> ::= <OpAssignOpt>
+<Op AssignOpt2> ::= <Op AssignOpt>
                   | <PalavraVazia>
 
 <Op AssignOpt> ::= "=" <Op Assign>
