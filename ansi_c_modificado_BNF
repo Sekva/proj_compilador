@@ -27,7 +27,6 @@
 
 
 <Var Decl> ::= <Type> <Var> <Var List>  ";"
-             | <Var> <Var List>  ";"
 
 <Var> ::= <Id> <VarOpt>
 
