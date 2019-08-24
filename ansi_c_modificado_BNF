@@ -153,7 +153,7 @@
 <Op BinXOROpt> ::= <Op BinXORRec>
                  | <PalavraVazia>
 
-<Op BinXORRec> ::= <Op BinXOR> "^" <OpBinAND> <Op BinXORRecOpt>
+<Op BinXORRec> ::= <Op BinXOR> "^" <Op BinAND> <Op BinXORRecOpt>
 
 <Op BinXORRecOpt> ::= <Op BinXORRec>
                     | <PalavraVazia>
