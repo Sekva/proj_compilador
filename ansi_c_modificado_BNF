@@ -31,7 +31,7 @@
 
 <Var> ::= <Id> <VarOpt>
 
-<VarOpt> ::= "=" <Op If>
+<VarOpt> ::= "=" <Op Or>
            |  <PalavraVazia>
 
 <Var List> ::=  "," <Var> <Var List>
@@ -70,7 +70,7 @@
                | "break" ";"
                | "continue" ";"
                | "return" <Expr> ";"
-               | "printk" "(" <Op If> ")" ";"
+               | "printk" "(" <Op Or> ")" ";"
                | ";"
 
 <Block> ::= "{" <Stm List> "}"
@@ -96,21 +96,12 @@
 
 
 
-<Op Assign> ::= <Op If> <Op AssignOpt2>
+<Op Assign> ::= <Op Or> <Op AssignOpt2>
 
 <Op AssignOpt2> ::= <OpAssignOpt>
                   | <PalavraVazia>
 
 <Op AssignOpt> ::= "=" <Op Assign>
-
-
-
-
-
-<Op If> ::= <Op Or> <Op IfOpt>
-
-<Op IfOpt> ::= "?" <Op If> ":" <Op If>
-             | <PalavraVazia>
 
 
 
