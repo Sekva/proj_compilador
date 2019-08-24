@@ -367,9 +367,10 @@
            | "Y"
            | "Z"
 
+<Oct Number> ::= <Octal Digit> <Oct NumberOpt>
 
-<Oct Number> ::= <Octal Digit>
-               | <Octal Digit> <Oct NumberRec>
+<Oct NumberOpt> ::= <Oct NumberRec>
+                  | <PalavraVazia>
 
 <Oct NumberRec> ::= <Oct Number> <Octal Digit> <Oct NumberRecOpt>
 
