@@ -101,14 +101,7 @@
 <Op AssignOpt2> ::= <OpAssignOpt>
                   | <PalavraVazia>
 
-<Op AssignOpt> ::= "="   <Op Assign>
-                 | "+="  <Op Assign>
-                 | "-="  <Op Assign>
-                 | "*="  <Op Assign>
-                 | "/="  <Op Assign>
-                 | "^="  <Op Assign>
-                 | "&="  <Op Assign>
-                 | "|="  <Op Assign>
+<Op AssignOpt> ::= "=" <Op Assign>
 
 
 
