@@ -106,13 +106,10 @@
 
 <Op Or> ::= <Op And> <OpOrOpt>
 
-<OpOrRec> ::= <Op Or> "||" <Op And> <OpOrRecOpt>
+<OpOrRec> ::= <Op Or> "||" <Op And> <OpOrOpt>
 
 <OpOrOpt> ::= <OpOrRec>
             | <PalavraVazia>
-
-<OpOrRecOpt> ::= <OpOrRec>
-               | <PalavraVazia>
 
 
 
@@ -120,13 +117,10 @@
 
 <Op And> ::= <Op BinOr> <Op AndOpt>
 
-<OpAndRec> ::= <Op And> "&&" <Op BinOr> <OpAndRecOpt>
+<OpAndRec> ::= <Op And> "&&" <Op BinOr> <Op AndOpt>
 
 <Op AndOpt> ::= <OpAndRec>
               | <PalavraVazia>
-
-<OpAndRecOpt> ::= <OpAndRec>
-                | <PalavraVazia>
 
 
 
@@ -137,10 +131,7 @@
 <Op BinOrOpt> ::= <Op BinOrRec>
                 | <PalavraVazia>
 
-<Op BinOrRec> ::= <Op BinOr> "|" <Op BinAND> <Op BinOrRecOpt>
-
-<Op BinOrRecOpt> ::= <Op BinOrRec>
-                   | <PalavraVazia>
+<Op BinOrRec> ::= <Op BinOr> "|" <Op BinAND> <Op BinOrOpt>
 
 
 
@@ -151,10 +142,7 @@
 <Op BinANDOpt>  ::= <Op BinANDRec>
                   |  <PalavraVazia>
 
-<Op BinANDRec> ::= <Op BinAND> "&" <Op Equate> <Op BinANDRecOpt>
-
-<Op BinANDRecOpt> ::= <Op BinANDRec>
-                    | <PalavraVazia>
+<Op BinANDRec> ::= <Op BinAND> "&" <Op Equate> <Op BinANDOpt>
 
 
 
@@ -165,10 +153,7 @@
 <Op EquateOpt2> ::= <Op EquateRec>
                   | <PalavraVazia>
 
-<Op EquateRec> ::= <Op Equate> <Op EquateOpt> <Op EquateRecOpt>
-
-<Op EquateRecOpt> ::= <Op EquateRec>
-                    | <PalavraVazia>
+<Op EquateRec> ::= <Op Equate> <Op EquateOpt> <Op EquateOpt2>
 
 <Op EquateOpt> ::= "==" <Op Compare>
                  | "!=" <Op Compare>
@@ -182,11 +167,7 @@
 <Op CompareOpt2> ::= <Op CompareRec>
                    | <PalavraVazia>
 
-<Op CompareRec> ::= <Op Compare> <Op CompareOpt> <Op CompareRecOpt>
-
-<Op CompareRecOpt> ::= <Op CompareRec>
-                     |  <PalavraVazia>
-
+<Op CompareRec> ::= <Op Compare> <Op CompareOpt> <Op CompareOpt2>
 
 <Op CompareOpt> ::= "<" <Op Add>
                   | ">" <Op Add>
@@ -202,10 +183,7 @@
 <Op AddOpt2> ::= <Op AddRec>
                | <PalavraVazia>
 
-<Op AddRec>  ::= <Op Add> <Op AddOpt> <Op AddRecOpt>
-
-<Op AddRecOpt> ::= <Op AddRec>
-                 | <PalavraVazia>
+<Op AddRec>  ::= <Op Add> <Op AddOpt> <Op AddOpt2>
 
 <Op AddOpt>  ::= "+" <Op Mult>
                | "-" <Op Mult>
@@ -216,10 +194,7 @@
 
 <Op Mult> ::= <Op Unary> <Op MultOpt2>
 
-<Op MultRec> ::= <Op Mult> <Op MultOpt> <Op MultRecOpt>
-
-<Op MultRecOpt> ::= <Op MultRec>
-                  |  <PalavraVazia>
+<Op MultRec> ::= <Op Mult> <Op MultOpt> <Op MultOpt2>
 
 <Op MultOpt> ::= "*" <Op Unary>
                | "/" <Op Unary>
