@@ -8,33 +8,28 @@
 
 
 
-<Func Decl> ::= <Func Id> "(" <Func ParamsOpt>
+<Func Decl> ::= "func" <Id> "(" <Func ParamsOpt>
 
-<Func ParamsOpt> ::= <Params> ")" <Block>
-                   | ")" <Block>
+<Func ParamsOpt> ::= <Params> ")" "returns" <Type> <Block>
+                   | ")" "returns" <Type> <Block>
 
 <Params> ::= <Param> <ParamsOpt>
 
 <ParamsOpt> ::= "," <Params>
               | <PalavraVazia>
 
-<Param> ::= <Type> <Id>
-
-<Func Id> ::= <Type> <Id>
+<Param> ::= <Id> "as" <Type>
 
 
 
 
 
-<Var Decl> ::= <Type> <Var> <Var List>  ";"
+<Var Decl> ::= <Var> ";"
 
-<Var> ::= <Id> <VarOpt>
+<Var> ::= <Id> "as" <Type> <VarOpt>
 
 <VarOpt> ::= "=" <Op Or>
            |  <PalavraVazia>
-
-<Var List> ::=  "," <Var> <Var List>
-             |  <PalavraVazia>
 
 
 
@@ -56,8 +51,11 @@
         | "while" "(" <Expr> ")" "{" <Stm> "}"
         | <Normal Stm>
 
-<IfOpt> ::= "{" <Then Stm> "}" "else" "{" <Stm> "}"
-          | "{" <Stm> "}"
+<IfOpt> ::= "{" <IfOptOpt>
+
+
+<IfOptOpt> ::= <Then Stm> "}" "else" "{" <Stm> "}"
+             | <Stm> "}"
 
 
 <Then Stm> ::= "if" "(" <Expr> ")" "{" <Then Stm> "}" "else" "{" <Then Stm> "}"
@@ -134,29 +132,15 @@
 
 
 
-<Op BinOr> ::= <Op BinXOR> <Op BinOrOpt>
+<Op BinOr> ::= <Op BinAND> <Op BinOrOpt>
 
 <Op BinOrOpt> ::= <Op BinOrRec>
                 | <PalavraVazia>
 
-<Op BinOrRec> ::= <Op BinOr> "|" <Op BinXOR> <Op BinOrRecOpt>
+<Op BinOrRec> ::= <Op BinOr> "|" <Op BinAND> <Op BinOrRecOpt>
 
 <Op BinOrRecOpt> ::= <Op BinOrRec>
                    | <PalavraVazia>
-
-
-
-
-
-<Op BinXOR> ::= <Op BinAND> <Op BinXOROpt>
-
-<Op BinXOROpt> ::= <Op BinXORRec>
-                 | <PalavraVazia>
-
-<Op BinXORRec> ::= <Op BinXOR> "^" <Op BinAND> <Op BinXORRecOpt>
-
-<Op BinXORRecOpt> ::= <Op BinXORRec>
-                    | <PalavraVazia>
 
 
 
