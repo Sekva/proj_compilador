@@ -93,7 +93,7 @@ fn main() {
         Regra {
             regra : String::from("<Func Decl>"),
             derivacoes : vec![
-                String::from("<Func Id> ( <Func ParamsOpt>"),
+                String::from("func <Id>(<Func ParamsOpt>"),
             ]
         }
     );
@@ -104,8 +104,8 @@ fn main() {
         Regra {
             regra : String::from("<Func ParamsOpt>"),
             derivacoes : vec![
-                String::from("<Params> ) <Block>"),
-                String::from(") <Block>"),
+                String::from("<Params>) returns <Type> <Block>"),
+                String::from(") returns <Type> <Block>"),
             ]
         }
     );
@@ -114,7 +114,7 @@ fn main() {
         Regra {
             regra : String::from("<Params>"),
             derivacoes : vec![
-                String::from("<Param> <ParamsOpt>"),
+                String::from("<Param><ParamsOpt>"),
             ]
         }
     );
@@ -123,7 +123,7 @@ fn main() {
         Regra {
             regra : String::from("<ParamsOpt>"),
             derivacoes : vec![
-                String::from(" , <Params>"),
+                String::from(", <Params>"),
                 String::from("<PalavraVazia>"),
             ]
         }
@@ -133,16 +133,7 @@ fn main() {
         Regra {
             regra : String::from("<Param>"),
             derivacoes : vec![
-                String::from("<Type> <Id>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Func Id>"),
-            derivacoes : vec![
-                String::from("<Type> <Id>"),
+                String::from("<Id> as <Type>"),
             ]
         }
     );
@@ -151,7 +142,7 @@ fn main() {
         Regra {
             regra : String::from("<Var Decl>"),
             derivacoes : vec![
-                String::from("<Type> <Var> <Var List> ; "),
+                String::from("<Var>;\n"),
             ]
         }
     );
@@ -160,7 +151,7 @@ fn main() {
         Regra {
             regra : String::from("<Var>"),
             derivacoes : vec![
-                String::from("<Id> <VarOpt>"),
+                String::from("<Id> as <Type> <VarOpt>"),
             ]
         }
     );
@@ -169,17 +160,7 @@ fn main() {
         Regra {
             regra : String::from("<VarOpt>"),
             derivacoes : vec![
-                String::from(" = <Op Or>"),
-                String::from("<PalavraVazia>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Var List>"),
-            derivacoes : vec![
-                String::from(" , <Var> <Var List>"),
+                String::from("= <Op Or>"),
                 String::from("<PalavraVazia>"),
             ]
         }
@@ -205,7 +186,7 @@ fn main() {
             derivacoes : vec![
                 String::from("<Var Decl>"),
                 String::from(" if   ( <Expr> ) <IfOpt>"),
-                String::from("while ( <Expr> ) { <Stm> }"),
+                String::from("while ( <Expr> ) {\n <Stm> }\n"),
                 String::from("<Normal Stm>"),
             ]
         }
@@ -215,8 +196,17 @@ fn main() {
         Regra {
             regra : String::from("<IfOpt>"),
             derivacoes : vec![
-                String::from("{ <Then Stm> } else { <Stm> }"),
-                String::from("{ <Stm> }"),
+                String::from("{\n <IfOptOpt>"),
+            ]
+        }
+    );
+
+    regras.push(
+        Regra {
+            regra : String::from("<IfOptOpt>"),
+            derivacoes : vec![
+                String::from("<Then Stm> }\n else {\n <Stm> }\n"),
+                String::from("<Stm> }\n"),
             ]
         }
     );
@@ -225,8 +215,8 @@ fn main() {
         Regra {
             regra : String::from("<Then Stm>"),
             derivacoes : vec![
-                String::from("if ( <Expr> ) { <Then Stm> } else { <Then Stm> }"),
-                String::from("while ( <Expr> ) { <Then Stm> }"),
+                String::from("if ( <Expr> ) {\n <Then Stm> } else {\n <Then Stm> }\n"),
+                String::from("while ( <Expr> ) {\n <Then Stm> }\n"),
                 String::from("<Normal Stm>"),
             ]
         }
@@ -237,12 +227,12 @@ fn main() {
             regra : String::from("<Normal Stm>"),
             derivacoes : vec![
                 String::from("<Block>"),
-                String::from("<Expr> ; "),
-                String::from(" break ; "),
-                String::from(" continue ; "),
-                String::from(" return <Expr> ; "),
-                String::from(" printk ( <Op Or> ) ; "),
-                String::from(" ; "),
+                String::from("<Expr> ;\n "),
+                String::from(" break ;\n "),
+                String::from(" continue ;\n "),
+                String::from(" return <Expr> ;\n "),
+                String::from(" printk ( <Op Or> ) ;\n "),
+                String::from(" ;\n "),
             ]
         }
     );
@@ -251,7 +241,7 @@ fn main() {
         Regra {
             regra : String::from("<Block>"),
             derivacoes : vec![
-                String::from(" { <Stm List> } "),
+                String::from(" {\n <Stm List> }\n"),
             ]
         }
     );
@@ -279,7 +269,7 @@ fn main() {
         Regra {
             regra : String::from("<ExprRec>"),
             derivacoes : vec![
-                String::from(" , <Op Assign> <ExprRecOpt>"),
+                String::from(" , <Op Assign> <ExprOpt>"),
             ]
         }
     );
@@ -287,16 +277,6 @@ fn main() {
     regras.push(
         Regra {
             regra : String::from("<ExprOpt>"),
-            derivacoes : vec![
-                String::from("<ExprRec>"),
-                String::from("<PalavraVazia>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<ExprRecOpt>"),
             derivacoes : vec![
                 String::from("<ExprRec>"),
                 String::from("<PalavraVazia>"),
@@ -327,26 +307,7 @@ fn main() {
         Regra {
             regra : String::from("<Op AssignOpt>"),
             derivacoes : vec![
-                String::from("=   <Op Assign>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op If>"),
-            derivacoes : vec![
-                String::from("<Op Or> <Op IfOpt>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op IfOpt>"),
-            derivacoes : vec![
-                String::from(" ? <Op If> : <Op If>"),
-                String::from("<PalavraVazia>"),
+                String::from("= <Op Assign>"),
             ]
         }
     );
@@ -364,7 +325,7 @@ fn main() {
         Regra {
             regra : String::from("<OpOrRec>"),
             derivacoes : vec![
-                String::from("<Op Or> || <Op And> <OpOrRecOpt>"),
+                String::from("<Op Or> || <Op And> <OpOrOpt>"),
             ]
         }
     );
@@ -372,16 +333,6 @@ fn main() {
     regras.push(
         Regra {
             regra : String::from("<OpOrOpt>"),
-            derivacoes : vec![
-                String::from("<OpOrRec>"),
-                String::from("<PalavraVazia>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<OpOrRecOpt>"),
             derivacoes : vec![
                 String::from("<OpOrRec>"),
                 String::from("<PalavraVazia>"),
@@ -402,7 +353,7 @@ fn main() {
         Regra {
             regra : String::from("<OpAndRec>"),
             derivacoes : vec![
-                String::from("<Op And> && <Op BinOr> <OpAndRecOpt>"),
+                String::from("<Op And> && <Op BinOr> <Op AndOpt>"),
             ]
         }
     );
@@ -419,19 +370,9 @@ fn main() {
 
     regras.push(
         Regra {
-            regra : String::from("<OpAndRecOpt>"),
-            derivacoes : vec![
-                String::from("<OpAndRec>"),
-                String::from("<PalavraVazia>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
             regra : String::from("<Op BinOr>"),
             derivacoes : vec![
-                String::from("<Op BinXOR> <Op BinOrOpt>"),
+                String::from("<Op BinAND> <Op BinOrOpt>"),
             ]
         }
     );
@@ -450,55 +391,7 @@ fn main() {
         Regra {
             regra : String::from("<Op BinOrRec>"),
             derivacoes : vec![
-                String::from("<Op BinOr> | <Op BinXOR> <Op BinOrRecOpt>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op BinOrRecOpt>"),
-            derivacoes : vec![
-                String::from("<Op BinOrRec>"),
-                String::from("<PalavraVazia>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op BinXOR>"),
-            derivacoes : vec![
-                String::from("<Op BinAND> <Op BinXOROpt>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op BinXOROpt>"),
-            derivacoes : vec![
-                String::from("<Op BinXORRec>"),
-                String::from("<PalavraVazia>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op BinXORRec>"),
-            derivacoes : vec![
-                String::from("<Op BinXOR> ^ <Op BinAND> <Op BinXORRecOpt>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op BinXORRecOpt>"),
-            derivacoes : vec![
-                String::from("<Op BinXORRec>"),
-                String::from("<PalavraVazia>"),
+                String::from("<Op BinOr> | <Op BinAND> <Op BinOrOpt>"),
             ]
         }
     );
@@ -526,17 +419,7 @@ fn main() {
         Regra {
             regra : String::from("<Op BinANDRec>"),
             derivacoes : vec![
-                String::from("<Op BinAND> & <Op Equate> <Op BinANDRecOpt>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op BinANDRecOpt>"),
-            derivacoes : vec![
-                String::from("<Op BinANDRec>"),
-                String::from("<PalavraVazia>"),
+                String::from("<Op BinAND> & <Op Equate> <Op BinANDOpt>"),
             ]
         }
     );
@@ -564,17 +447,7 @@ fn main() {
         Regra {
             regra : String::from("<Op EquateRec>"),
             derivacoes : vec![
-                String::from("<Op Equate> <Op EquateOpt> <Op EquateRecOpt>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op EquateRecOpt>"),
-            derivacoes : vec![
-                String::from("<Op EquateRec>"),
-                String::from("<PalavraVazia>"),
+                String::from("<Op Equate> <Op EquateOpt> <Op EquateOpt2>"),
             ]
         }
     );
@@ -612,17 +485,7 @@ fn main() {
         Regra {
             regra : String::from("<Op CompareRec>"),
             derivacoes : vec![
-                String::from("<Op Compare> <Op CompareOpt> <Op CompareRecOpt>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op CompareRecOpt>"),
-            derivacoes : vec![
-                String::from("<Op CompareRec>"),
-                String::from("<PalavraVazia>"),
+                String::from("<Op Compare> <Op CompareOpt> <Op CompareOpt2>"),
             ]
         }
     );
@@ -662,17 +525,7 @@ fn main() {
         Regra {
             regra : String::from("<Op AddRec>"),
             derivacoes : vec![
-                String::from("<Op Add> <Op AddOpt> <Op AddRecOpt>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op AddRecOpt>"),
-            derivacoes : vec![
-                String::from("<Op AddRec>"),
-                String::from("<PalavraVazia>"),
+                String::from("<Op Add> <Op AddOpt> <Op AddOpt2>"),
             ]
         }
     );
@@ -700,17 +553,7 @@ fn main() {
         Regra {
             regra : String::from("<Op MultRec>"),
             derivacoes : vec![
-                String::from("<Op Mult> <Op MultOpt> <Op MultRecOpt>"),
-            ]
-        }
-    );
-
-    regras.push(
-        Regra {
-            regra : String::from("<Op MultRecOpt>"),
-            derivacoes : vec![
-                String::from("<Op MultRec>"),
-                String::from("<PalavraVazia>"),
+                String::from("<Op Mult> <Op MultOpt> <Op MultOpt2>"),
             ]
         }
     );
@@ -998,7 +841,7 @@ fn main() {
 
     regras.push(
         Regra {
-            regra : String::from("<BoolLiteral> "),
+            regra : String::from("<BoolLiteral>"),
             derivacoes : vec![
                 String::from(" false "),
                 String::from(" true "),
@@ -1129,9 +972,9 @@ fn main() {
     );
 
 
-    // regras.reverse();
+    //regras.reverse();
 
-    let mut palavra : String = String::from("<Value>");
+    let mut palavra : String = String::from("<Decls>");
 
     let mut limitador : usize = 0;
 
@@ -1155,28 +998,7 @@ fn main() {
         palavra = palavra2;
 
         limitador += 1;
-        regras.shuffle(&mut rand::thread_rng());
-    }
-
-    let mut _rt = false;
-
-    if alguma_variavel(&palavra, &regras) {
-        variaveis = true;
-        while variaveis {
-            println!("");
-            println!("{}", palavra);
-            println!("");
-            println!("limitador {}", limitador);
-
-            let (variaveis2, palavra2) = expandir(palavra, &regras, limitador);
-
-
-            variaveis = variaveis2;
-            palavra = palavra2;
-
-            limitador += 1;
-        }
-        _rt =true;
+        //regras.shuffle(&mut rand::thread_rng());
     }
 
     println!("");
