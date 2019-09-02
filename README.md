@@ -1,1 +1,14 @@
-# proj_compilador
+# Projeto da Disciplina de Compiladores - 2019.2
+
+#### **Grupo:**
+- Mateus Baltazar de Almeida; [GitHub](https://github.com/MBaltz)
+- Matheus Machado Vieira; [GitHub](https://github.com/sekva)
+---
+## Etapas
+- [ ] Analisador Léxico
+- [ ] Analisador Sintático
+- [ ] Analisador Semântico
+- [ ] Gerador de Código Intermediário
+- [ ] Otimizador de Código Dependente de Máquina
+- [ ] Gerador de Código
+- [ ] Otimizador de Código Independente de Máquina
