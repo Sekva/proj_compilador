@@ -9,6 +9,6 @@ fn main() {
     let tokens = analisador_lexico::lexer::analisar("/home/sekva/dados/BCC/6P/compiladores/proj_compilador/compilador/teste.asd".into());
 
     for i in tokens {
-        println!("{}", i.lexema());
+        println!("tipo: {}, lexema: {}, literal: {}, linha: {}",i.token(), i.lexema(),  i.literal(), i.linha());
     }
 }

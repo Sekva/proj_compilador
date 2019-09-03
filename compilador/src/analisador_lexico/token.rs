@@ -21,4 +21,13 @@ impl Token {
     pub fn lexema(&self) -> String {
         self.lexema.to_string()
     }
+    pub fn literal(&self) -> String {
+        self.literal.to_string()
+    }
+    pub fn token(&self) -> Tipo_Token {
+        self.token
+    }
+    pub fn linha(&self) -> usize {
+        self.linha
+    }
 }

@@ -32,6 +32,8 @@ lazy_static! {
         reservadas.insert("break".to_string(), Tipo_Token::BREAK);
         reservadas.insert("continue".to_string(), Tipo_Token::CONTINUE);
         reservadas.insert("printk".to_string(), Tipo_Token::PRINTK);
+        reservadas.insert("true".to_string(), Tipo_Token::TRUE);
+        reservadas.insert("false".to_string(), Tipo_Token::FALSE);
         return reservadas;
     };
 }
