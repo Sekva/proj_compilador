@@ -1,0 +1,74 @@
+pub enum Tipo_Token {
+
+    PARENTESE_ESQUERDO,
+    PARENTESE_DIREITO,
+
+    CHAVE_ESQUERDA,
+    CHAVE_DIREITA,
+
+    VIRGULA,
+    PONTO_VIRGULA,
+
+    SIMBOLO_IGUAL,
+
+    SIMBOLO_D_OR,
+    SIMBOLO_D_AND,
+
+    SIMBOLO_OR,
+    SIMBOLO_AND,
+
+    SIMBOLO_D_IGUAL,
+    SIMBOLO_D_DIFERENTE,
+
+    SIMBOLO_MENOR_Q,
+    SIMBOLO_MAIOR_Q,
+    SIMBOLO_MENOR_IGUAL_Q,
+    SIMBOLO_MAIOR_IGUAL_Q,
+
+    SIMBOLO_MAIS,
+    SIMBOLO_MENOS,
+
+    SIMBOLO_MULTI,
+    SIMBOLO_DIV,
+    SIMBOLO_MOD,
+
+    SIMBOLO_NOT,
+    SIMBOLO_BIT_NOT,
+    SIMBOLO_INC,
+    SIMBOLO_DEC,
+
+    ID,
+    STR,
+    CHAR,
+    INT,
+    BOOL,
+    FLOAT,
+    OCTAL,
+    HEX,
+    VOID,
+
+    ID_STR,
+    ID_CHAR,
+    ID_INT,
+    ID_BOOL,
+    ID_FLOAT,
+    ID_VOID,
+
+    ELSE,
+    FALSE,
+    FUNC,
+    FOR,
+    IF,
+    PRINTK,
+    RETURN,
+    RETURNS,
+    TRUE, AS,
+    WHILE,
+    BREAK,
+    CONTINUE,
+
+
+
+  EOF
+
+}
