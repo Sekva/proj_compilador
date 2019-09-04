@@ -8,6 +8,64 @@ use std::collections::HashMap;
 use crate::analisador_lexico::token::*;
 use crate::analisador_lexico::tipo_token::*;
 
+fn carregar_fonte(caminho : String) -> Vec<u8> {
+    let mut buffer = Vec::new();
+    let mut file = File::open(caminho).expect("Codigo fonte não encontrado");
+    file.read_to_end(&mut buffer).expect("Incapaz de ler arquivo");
+
+    buffer
+}
+
+struct Lexer {
+    comeco : usize,
+    char_atual : usize,
+    linha : usize,
+    fonte : Vec<u8>,
+    reservadas : HashMap<String, Tipo_Token>,
+    lista_tokens : Vec<Token>,
+}
+
+impl Lexer {
+
+
+    pub fn novo(caminho : String) -> Lexer {
+
+        let mut mapa = HashMap::new();
+        mapa.insert("if".to_string(), Tipo_Token::IF);
+        mapa.insert("else".to_string(), Tipo_Token::ELSE);
+        mapa.insert("while".to_string(), Tipo_Token::WHILE);
+        mapa.insert("returns".to_string(), Tipo_Token::RETURNS);
+        mapa.insert("return".to_string(), Tipo_Token::RETURN);
+        mapa.insert("as".to_string(), Tipo_Token::AS);
+        mapa.insert("func".to_string(), Tipo_Token::FUNC);
+        mapa.insert("bool".to_string(), Tipo_Token::ID_BOOL);
+        mapa.insert("char".to_string(), Tipo_Token::ID_CHAR);
+        mapa.insert("float".to_string(), Tipo_Token::ID_FLOAT);
+        mapa.insert("int".to_string(), Tipo_Token::ID_INT);
+        mapa.insert("str".to_string(), Tipo_Token::ID_STR);
+        mapa.insert("void".to_string(), Tipo_Token::ID_VOID);
+        mapa.insert("break".to_string(), Tipo_Token::BREAK);
+        mapa.insert("continue".to_string(), Tipo_Token::CONTINUE);
+        mapa.insert("printk".to_string(), Tipo_Token::PRINTK);
+        mapa.insert("true".to_string(), Tipo_Token::TRUE);
+        mapa.insert("false".to_string(), Tipo_Token::FALSE);
+
+        Lexer {
+            comeco : 0,
+            char_atual : 0,
+            linha : 1,
+            fonte : carregar_fonte(caminho),
+            reservadas : mapa,
+            lista_tokens : Vec::new(),
+        }
+    }
+
+    pub fn analisar() -> Vec<Token> {
+    }
+
+}
+
+
 static mut COMECO : usize = 0;
 static mut CHAR_ATUAL : usize = 0;
 static mut LINHA: usize = 1;
@@ -36,15 +94,6 @@ lazy_static! {
         reservadas.insert("false".to_string(), Tipo_Token::FALSE);
         return reservadas;
     };
-}
-
-
-fn carregar_fonte(caminho : String) -> Vec<u8> {
-    let mut buffer = Vec::new();
-    let mut file = File::open(caminho).expect("Codigo fonte não encontrado");
-    file.read_to_end(&mut buffer).expect("Incapaz de ler arquivo");
-
-    buffer
 }
 
 
