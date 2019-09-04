@@ -37,8 +37,6 @@ pub enum Tipo_Token {
 
     SIMBOLO_NOT,
     SIMBOLO_BIT_NOT,
-    SIMBOLO_INC,
-    SIMBOLO_DEC,
 
     ID,
     STR,
@@ -115,10 +113,8 @@ impl fmt::Display for Tipo_Token {
             Tipo_Token::SIMBOLO_D_DIFERENTE => "SIMBOLO_D_DIFERENTE",
             Tipo_Token::SIMBOLO_D_IGUAL => "SIMBOLO_D_IGUAL",
             Tipo_Token::SIMBOLO_D_OR => "SIMBOLO_D_OR",
-            Tipo_Token::SIMBOLO_DEC => "SIMBOLO_DEC",
             Tipo_Token::SIMBOLO_DIV => "SIMBOLO_DIV",
             Tipo_Token::SIMBOLO_IGUAL => "SIMBOLO_IGUAL",
-            Tipo_Token::SIMBOLO_INC => "SIMBOLO_INC",
             Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q => "SIMBOLO_MAIOR_IGUAL_Q",
             Tipo_Token::SIMBOLO_MAIOR_Q => "SIMBOLO_MAIOR_Q",
             Tipo_Token::SIMBOLO_MAIS => "SIMBOLO_MAIS",

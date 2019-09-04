@@ -80,6 +80,7 @@ fn scan_token(lista_tokens : &mut Vec<Token>, codigo_fonte : &Vec<u8>) {
         ';' => lista_tokens.push(montar_token(Tipo_Token::PONTO_VIRGULA, codigo_fonte)),
         '=' => {
             if v_prox('=', codigo_fonte) {
+                proximo(codigo_fonte);
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_D_IGUAL, codigo_fonte))
             } else {
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_IGUAL, codigo_fonte))
@@ -87,6 +88,7 @@ fn scan_token(lista_tokens : &mut Vec<Token>, codigo_fonte : &Vec<u8>) {
         },
         '|' => {
             if v_prox('|', codigo_fonte) {
+                proximo(codigo_fonte);
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_D_OR, codigo_fonte))
             } else {
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_OR, codigo_fonte))
@@ -94,6 +96,7 @@ fn scan_token(lista_tokens : &mut Vec<Token>, codigo_fonte : &Vec<u8>) {
         },
         '&' => {
             if v_prox('&', codigo_fonte) {
+                proximo(codigo_fonte);
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_D_AND, codigo_fonte))
             } else {
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_AND, codigo_fonte))
@@ -101,6 +104,7 @@ fn scan_token(lista_tokens : &mut Vec<Token>, codigo_fonte : &Vec<u8>) {
         },
         '!' => {
             if v_prox('=', codigo_fonte) {
+                proximo(codigo_fonte);
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_D_DIFERENTE, codigo_fonte))
             } else {
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_NOT, codigo_fonte))
@@ -108,6 +112,7 @@ fn scan_token(lista_tokens : &mut Vec<Token>, codigo_fonte : &Vec<u8>) {
         },
         '<' => {
             if v_prox('=', codigo_fonte) {
+                proximo(codigo_fonte);
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MENOR_IGUAL_Q, codigo_fonte))
             } else {
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MENOR_Q, codigo_fonte))
@@ -115,25 +120,14 @@ fn scan_token(lista_tokens : &mut Vec<Token>, codigo_fonte : &Vec<u8>) {
         },
         '>' => {
             if v_prox('=', codigo_fonte) {
+                proximo(codigo_fonte);
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q, codigo_fonte))
             } else {
                 lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MAIOR_Q, codigo_fonte))
             }
         },
-        '+' => {
-            if v_prox('+', codigo_fonte) {
-                lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_INC, codigo_fonte))
-            } else {
-                lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MAIS, codigo_fonte))
-            }
-        },
-        '-' => {
-            if v_prox('-', codigo_fonte) {
-                lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_DEC, codigo_fonte))
-            } else {
-                lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MENOS, codigo_fonte))
-            }
-        },
+        '+' => lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MAIS, codigo_fonte)),
+        '-' => lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MENOS, codigo_fonte)),
         '*' => lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MULTI, codigo_fonte)),
         '/' => lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_DIV, codigo_fonte)),
         '%' => lista_tokens.push(montar_token(Tipo_Token::SIMBOLO_MOD, codigo_fonte)),
@@ -176,16 +170,9 @@ fn montar_token_2(tipo : Tipo_Token, literal : String, fonte : &Vec<u8>) -> Toke
 }
 
 fn v_prox(c : char, fonte : &Vec<u8>) -> bool {
-    unsafe {
-        if CHAR_ATUAL >= fonte.len() { return false; }
-        let t = fonte[CHAR_ATUAL + 1] == (c as u8);
 
-        if t {
-            CHAR_ATUAL += 1;
-        }
+    peek(fonte) == c
 
-        return t;
-    }
 }
 
 fn peek(fonte : &Vec<u8>) -> char {
@@ -276,11 +263,14 @@ fn pegar_numero(fonte : &Vec<u8>) -> Token {
     unsafe {
 
         let mut tipo = Tipo_Token::INT;
+        let mut is_float = false;
+        let mut is_hex = false;
 
         while (peek(fonte).is_numeric()) && !(CHAR_ATUAL >= fonte.len()) { proximo(fonte); }
         if peek(fonte) == '.' && peek_prox(fonte).is_numeric() {
             proximo(fonte);
             while (peek(fonte).is_numeric()) && !(CHAR_ATUAL >= fonte.len()) { proximo(fonte); }
+            is_float = true;
             tipo = Tipo_Token::FLOAT;
         }
 
@@ -288,9 +278,10 @@ fn pegar_numero(fonte : &Vec<u8>) -> Token {
             proximo(fonte);
             while (peek(fonte).is_numeric()) && !(CHAR_ATUAL >= fonte.len()) { proximo(fonte); }
             tipo = Tipo_Token::HEX;
+            is_hex = true;
         }
 
-        if fonte[COMECO] as char == '0' {
+        if (fonte[COMECO] as char == '0') && (!is_float) && (!is_hex) {
             tipo = Tipo_Token::OCTAL;
         }
 
