@@ -31,3 +31,10 @@ impl Token {
         self.linha
     }
 }
+
+impl PartialEq for Token {
+    fn eq(&self, other: &Self) -> bool {
+        self.token == other.token && self.lexema == other.lexema
+    }
+}
+
