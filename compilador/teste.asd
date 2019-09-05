@@ -13,6 +13,9 @@ func aalo(x1 as str, x2 as bool) returns float {
 
     hexhex as int = 0x666 + 0888;
 
+    t1 as bool = false;
+    t2 as bool = true;
+
     return 0.2;
 }
 
