@@ -1,6 +1,7 @@
 use crate::analisador_lexico::tipo_token::*;
 use std::fmt;
 
+#[derive(Clone)]
 pub struct Token {
     token       : Tipo_Token,
     lexema      : String,
@@ -11,6 +12,7 @@ pub struct Token {
     valor_str   : Option<String>,
     valor_int   : Option<i128>,
     valor_float : Option<f64>,
+    symtab      : u64,
 }
 
 impl Token {
@@ -51,6 +53,7 @@ impl Token {
             valor_str   : opt_str,
             valor_int   : opt_int,
             valor_float : opt_float,
+            symtab      : 0,
         }
     }
 
@@ -64,6 +67,8 @@ impl Token {
     pub fn valor_str   (&self) -> Option<String> { self.valor_str.clone() }
     pub fn valor_int   (&self) -> Option<i128>   { self.valor_int         }
     pub fn valor_float (&self) -> Option<f64>    { self.valor_float       }
+
+    pub fn symtab (&self) -> u64 { self.symtab }
 }
 
 impl PartialEq for Token {
