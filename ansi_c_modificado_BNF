@@ -48,18 +48,18 @@
 
 <Stm> ::= <Var Decl>
         | "if" "(" <Expr> ")" <IfOpt>
-        | "while" "(" <Expr> ")" "{" <Stm> "}"
+        | "while" "(" <Expr> ")" <Then Stm>
         | <Normal Stm>
 
-<IfOpt> ::= "{" <IfOptOpt>
+<IfOpt> ::= <IfOptOpt>
 
 
-<IfOptOpt> ::= <Then Stm> "}" "else" "{" <Stm> "}"
-             | <Stm> "}"
+<IfOptOpt> ::= <Then Stm> "else" <Stm>
+             | <Stm>
 
 
-<Then Stm> ::= "if" "(" <Expr> ")" "{" <Then Stm> "}" "else" "{" <Then Stm> "}"
-             | "while" "(" <Expr> ")" "{" <Then Stm> "}"
+<Then Stm> ::= "if" "(" <Expr> ")" <Then Stm> "else" <Then Stm>
+             | "while" "(" <Expr> ")" <Then Stm>
              | <Normal Stm>
 
 <Normal Stm> ::= <Block>
