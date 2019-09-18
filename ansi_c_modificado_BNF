@@ -90,6 +90,11 @@
 
 
 
+
+
+
+
+
 <Op Assign> ::= <Op Or> <Op AssignOpt2>
 
 <Op AssignOpt2> ::= <Op AssignOpt>
@@ -207,9 +212,6 @@
 <Op Unary> ::= "!"  <Op Unary>
              | "~"  <Op Unary>
              | "-"  <Op Unary>
-             | "*"  <Op Unary>
-             | "++" <Op Unary>
-             | "--" <Op Unary>
              | <Value>
 
 
