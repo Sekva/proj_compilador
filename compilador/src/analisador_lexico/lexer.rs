@@ -165,7 +165,8 @@ impl Lexer {
                     let t = self.pegar_id();
                     self.lista_tokens.push(t);
                 } else {
-                    panic!("?????????????");
+                    println!("Caracter não reconhecido: {}, na linha {}", c, self.linha);
+                    std::process::exit(1);
                 }
             },
         }
