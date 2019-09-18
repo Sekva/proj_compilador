@@ -257,7 +257,6 @@ impl Lexer {
 
         match self.reservadas.get(&id) {
             Some(t) => {
-                println!("{} : {}", &id, t);
                 match t {
                     Tipo_Token::IF => tipo = Tipo_Token::IF,
                     Tipo_Token::ELSE => tipo = Tipo_Token::ELSE,

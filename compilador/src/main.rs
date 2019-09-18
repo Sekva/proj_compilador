@@ -14,10 +14,6 @@ fn main() {
     lexer.analisar();
     let tokens = lexer.tokens();
 
-    for i in tokens {
-        println!("{}", i);
-    }
-
     let mut parser = parser::Parser::novo(tokens.clone());
     parser.iniciar_analise();
 
