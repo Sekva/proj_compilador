@@ -52,6 +52,8 @@ impl Parser {
             self.func_decl();
         } else if self.match_token(Tipo_Token::ID) {
             self.var_decl();
+        } else {
+            self.erro("id ou func");
         }
 
 
@@ -118,11 +120,6 @@ impl Parser {
         if self.match_token(Tipo_Token::VIRGULA) {
             self.consumir_token();
             self.params();
-        } else if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
-            return;
-        } else {
-            self.erro(",");
-            self.erro(")");
         }
     }
     fn param(&mut self) {
@@ -173,10 +170,6 @@ impl Parser {
         if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
             self.consumir_token();
             self.op_or();
-        } else if self.match_token(Tipo_Token::PONTO_VIRGULA) {
-            return;
-        } else {
-            self.erro(";");
         }
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -192,14 +185,12 @@ impl Parser {
                 } else {
                     self.erro("indentificador de tipo");
         }
-
     }
     ///////////////////////////////////////////////////////////////////////////
     fn stm(&mut self) {
         println!("stm");
-        if self.match_token(Tipo_Token::ID) {
-            self.var_decl();
-        } else if self.match_token(Tipo_Token::IF) {
+
+        if self.match_token(Tipo_Token::IF) {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
@@ -207,104 +198,86 @@ impl Parser {
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
                     self.if_opt();
-                } else {
-                    self.erro(")");
-                }
-            } else {
-                self.erro("(");
-            }
-        } else if self.match_token(Tipo_Token::WHILE) {
+                } else { self.erro(")"); }
+            } else { self.erro("("); }
+        }
+
+
+        else if self.match_token(Tipo_Token::WHILE) {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
                 self.expr();
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
+                    self.consumir_token();
                     self.then_stm();
-                }
-                else {
-                    self.erro(")")
-                }
-            } else {
-                self.erro("(");
-            }
-        } else if self.match_token(Tipo_Token::BREAK)
-            || self.match_token(Tipo_Token::CONTINUE)
-                || self.match_token(Tipo_Token::RETURN)
-                || self.match_token(Tipo_Token::PRINTK)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA)
-                || self.match_token(Tipo_Token::CHAVE_ESQUERDA)
-                || self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
-                    self.normal_stm();
-                } else {
-                    self.erro("muita coisa")
+                } else { self.erro(")"); }
+            } else { self.erro("("); }
         }
 
+
+        else if self.match_token(Tipo_Token::ID) {
+            self.var_decl();
+        }
+
+
+        else if self.match_token(Tipo_Token::BREAK)
+            || self.match_token(Tipo_Token::CONTINUE)
+            || self.match_token(Tipo_Token::RETURN)
+            || self.match_token(Tipo_Token::PRINTK)
+            || self.match_token(Tipo_Token::PONTO_VIRGULA)
+            || self.match_token(Tipo_Token::CHAVE_ESQUERDA)
+            || self.match_token(Tipo_Token::SIMBOLO_NOT)
+            || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
+            || self.match_token(Tipo_Token::SIMBOLO_MENOS)
+            || self.match_token(Tipo_Token::OCTAL)
+            || self.match_token(Tipo_Token::HEX)
+            || self.match_token(Tipo_Token::INT)
+            || self.match_token(Tipo_Token::STR)
+            || self.match_token(Tipo_Token::CHAR)
+            || self.match_token(Tipo_Token::FLOAT)
+            || self.match_token(Tipo_Token::TRUE)
+            || self.match_token(Tipo_Token::FALSE)
+            || self.match_token(Tipo_Token::ID)
+            || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
+                self.normal_stm();
+        }
     }
     fn if_opt(&mut self) {
         println!("if_opt");
+
+        // first de stm igual ao de then_stm
+        // vamos direto ao then_stm que facilita
+        // para declarar variaveis tem estar entre {}
+
+
         if self.match_token(Tipo_Token::IF)
-                || self.match_token(Tipo_Token::WHILE)
-                || self.match_token(Tipo_Token::BREAK)
-                || self.match_token(Tipo_Token::CONTINUE)
-                || self.match_token(Tipo_Token::RETURN)
-                || self.match_token(Tipo_Token::PRINTK)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA)
-                || self.match_token(Tipo_Token::CHAVE_ESQUERDA)
-                || self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
-                    self.then_stm();
-                    if self.match_token(Tipo_Token::ELSE) {
-                        self.consumir_token();
-                        self.stm();
-                    } else {
-                        self.erro("else");
-                    }
-        } else if self.match_token(Tipo_Token::IF)
             || self.match_token(Tipo_Token::WHILE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::BREAK)
-                || self.match_token(Tipo_Token::CONTINUE)
-                || self.match_token(Tipo_Token::RETURN)
-                || self.match_token(Tipo_Token::PRINTK)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA)
-                || self.match_token(Tipo_Token::CHAVE_ESQUERDA)
-                || self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
-                    self.stm();
-        }
+            || self.match_token(Tipo_Token::BREAK)
+            || self.match_token(Tipo_Token::CONTINUE)
+            || self.match_token(Tipo_Token::RETURN)
+            || self.match_token(Tipo_Token::PRINTK)
+            || self.match_token(Tipo_Token::PONTO_VIRGULA)
+            || self.match_token(Tipo_Token::CHAVE_ESQUERDA)
+            || self.match_token(Tipo_Token::SIMBOLO_NOT)
+            || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
+            || self.match_token(Tipo_Token::SIMBOLO_MENOS)
+            || self.match_token(Tipo_Token::OCTAL)
+            || self.match_token(Tipo_Token::HEX)
+            || self.match_token(Tipo_Token::INT)
+            || self.match_token(Tipo_Token::STR)
+            || self.match_token(Tipo_Token::CHAR)
+            || self.match_token(Tipo_Token::FLOAT)
+            || self.match_token(Tipo_Token::TRUE)
+            || self.match_token(Tipo_Token::FALSE)
+            || self.match_token(Tipo_Token::ID)
+            || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
+                self.then_stm();
+                if self.match_token(Tipo_Token::ELSE) {
+                    self.consumir_token();
+                    self.then_stm();
+                }
+        } else { self.erro("após if ( expr ), algo não"); }
     }
     fn then_stm(&mut self) {
         println!("then_stm");
@@ -328,7 +301,9 @@ impl Parser {
             } else {
                 self.erro("(");
             }
-        } else if self.match_token(Tipo_Token::WHILE) {
+        }
+
+        else if self.match_token(Tipo_Token::WHILE) {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
@@ -342,7 +317,9 @@ impl Parser {
             } else {
                 self.erro("(");
             }
-        } else if self.match_token(Tipo_Token::BREAK)
+        }
+
+        else if self.match_token(Tipo_Token::BREAK)
                 || self.match_token(Tipo_Token::CONTINUE)
                 || self.match_token(Tipo_Token::RETURN)
                 || self.match_token(Tipo_Token::PRINTK)
@@ -362,15 +339,66 @@ impl Parser {
                 || self.match_token(Tipo_Token::ID)
                 || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
             self.normal_stm();
-        } else {
-            self.erro("muita coisa de novo no then_stm, +/- 335");
+        }
+
+        else {
+            self.erro("muita coisa de novo no then_stm não");
         }
     }
     fn normal_stm(&mut self) {
         println!("normal_stm");
+
+
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
             self.block();
-        } else if self.match_token(Tipo_Token::SIMBOLO_NOT)
+        }
+
+        else if self.match_token(Tipo_Token::BREAK) {
+            self.consumir_token();
+            if self.match_token(Tipo_Token::PONTO_VIRGULA) {
+                self.consumir_token();
+            } else { self.erro(";"); }
+        }
+
+        else if self.match_token(Tipo_Token::CONTINUE) {
+            self.consumir_token();
+            if self.match_token(Tipo_Token::PONTO_VIRGULA) {
+                self.consumir_token();
+            } else { self.erro(";"); }
+        }
+
+        else if self.match_token(Tipo_Token::PONTO_VIRGULA) {
+            self.consumir_token();
+        }
+
+
+        else if self.match_token(Tipo_Token::RETURN) {
+            self.consumir_token();
+            self.expr();
+            if self.match_token(Tipo_Token::PONTO_VIRGULA) {
+                self.consumir_token();
+            } else { self.erro(";"); }
+        }
+
+        else if self.match_token(Tipo_Token::PRINTK) {
+            self.consumir_token();
+            if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
+                self.consumir_token();
+                self.op_or();
+                if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
+                    self.consumir_token();
+                    if self.match_token(Tipo_Token::PONTO_VIRGULA) {
+                        self.consumir_token();
+                    } else { self.erro(";"); }
+                } else { self.erro(")"); }
+            } else { self.erro("("); }
+
+        }
+
+
+
+
+        else if self.match_token(Tipo_Token::SIMBOLO_NOT)
             || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
             || self.match_token(Tipo_Token::SIMBOLO_MENOS)
             || self.match_token(Tipo_Token::OCTAL)
@@ -386,50 +414,14 @@ impl Parser {
                 self.expr();
                 if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                     self.consumir_token();
-                } else {
-                    self.erro(";");
-                }
-            } else if self.match_token(Tipo_Token::BREAK) {
-                self.consumir_token();
-                if self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    self.consumir_token();
-                } else {
-                    self.erro(";");
-                }
-            } else if self.match_token(Tipo_Token::CONTINUE) {
-                self.consumir_token();
-                if self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    self.consumir_token();
-                }
-            } else if self.match_token(Tipo_Token::RETURN) {
-                self.consumir_token();
-                self.expr();
-                if self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    self.consumir_token();
-                }
-            } else if self.match_token(Tipo_Token::PRINTK) {
-                self.consumir_token();
-                if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
-                    self.consumir_token();
-                    self.op_or();
-                    if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
-                        self.consumir_token();
-                        if self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                            self.consumir_token();
-                        } else {
-                            self.erro(";");
-                        }
-                    } else {
-                        self.erro(")");
-                    }
-                } else {
-                    self.erro("(");
-                }
-            } else if self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                self.consumir_token();
-            } else {
-                self.erro("stm");
-            }
+                } else { self.erro(";"); }
+        }
+
+
+
+
+        else { self.erro("normal_stm"); }
+
     }
     fn block(&mut self) {
         println!("block");
@@ -470,10 +462,6 @@ impl Parser {
             || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
             self.stm();
             self.stm_list();
-        } else if self.match_token(Tipo_Token::CHAVE_DIREITA) {
-            return;
-        } else {
-            self.erro("stm list");
         }
     }
 
@@ -495,20 +483,15 @@ impl Parser {
             || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.op_assign();
                 self.expr_opt();
-            } else {
-                self.erro("expressão");
-            }
+        } else {
+            self.erro("expressão");
+        }
     }
     fn expr_opt(&mut self) {
         println!("expr_opt");
         if self.match_token(Tipo_Token::VIRGULA) {
             self.expr_rec();
-        } else if self.match_token(Tipo_Token::PARENTESE_DIREITO)
-            || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                return;
-            } else {
-                self.erro("expressão opt");
-            }
+        }
     }
     fn expr_rec(&mut self) {
         println!("expr_rec");
@@ -545,15 +528,11 @@ impl Parser {
     }
     fn op_assign_opt_2(&mut self) {
         println!("op_assign_opt_2");
+
         if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
             self.op_assign_opt();
-        } else if self.match_token(Tipo_Token::VIRGULA)
-            || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-            || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                return;
-        } else {
-            self.erro("expressão de atribuição opt 2");
         }
+
     }
     fn op_assign_opt(&mut self) {
         println!("op_assign_opt");
@@ -630,15 +609,7 @@ impl Parser {
             || self.match_token(Tipo_Token::FALSE)
             || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.op_or_rec();
-            } else if self.match_token(Tipo_Token::SIMBOLO_D_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_IGUAL)
-                || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-                || self.match_token(Tipo_Token::VIRGULA)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    return;
-                } else {
-                    self.erro("expressão de or opt");
-            }
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -686,7 +657,7 @@ impl Parser {
                 } else {
                     self.erro("==");
                 }
-            }
+        }
     }
     fn op_and_opt(&mut self) {
         println!("op_and_opt");
@@ -704,29 +675,7 @@ impl Parser {
             || self.match_token(Tipo_Token::FALSE)
             || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.op_and_rec();
-            } else if self.match_token(Tipo_Token::SIMBOLO_D_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
-                || self.match_token(Tipo_Token::SIMBOLO_D_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_IGUAL)
-                || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-                || self.match_token(Tipo_Token::VIRGULA)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    return;
-                } else {
-                    self.erro("expressão and");
-            }
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -767,29 +716,6 @@ impl Parser {
                 || self.match_token(Tipo_Token::ID)
                 || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                     self.op_bin_or_rec();
-        } else if self.match_token(Tipo_Token::SIMBOLO_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
-                || self.match_token(Tipo_Token::SIMBOLO_D_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_IGUAL)
-                || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-                || self.match_token(Tipo_Token::VIRGULA)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    return;
-                } else {
-                    self.erro("op bin or");
         }
     }
     fn op_bin_or_rec(&mut self) {
@@ -815,7 +741,7 @@ impl Parser {
                     } else {
                         self.erro("|");
                     }
-        }
+        } else { self.erro("op bin or rec"); }
 
     }
 
@@ -859,33 +785,7 @@ impl Parser {
                 || self.match_token(Tipo_Token::ID)
                 || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                     self.op_bin_and_rec();
-        } else if self.match_token(Tipo_Token::SIMBOLO_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
-                || self.match_token(Tipo_Token::SIMBOLO_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_D_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_D_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_IGUAL)
-                || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-                || self.match_token(Tipo_Token::VIRGULA)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    return;
-        } else {
-            self.erro("op bin and opt");
         }
-
-
     }
     fn op_bin_and_rec(&mut self) {
         println!("op_bin_and_rec");
@@ -908,7 +808,7 @@ impl Parser {
                         self.op_equate();
                         self.op_bin_and_opt();
                     }
-                } else {
+        } else {
                     self.erro("op bin and rec");
         }
 
@@ -917,6 +817,7 @@ impl Parser {
     ///////////////////////////////////////////////////////////////////////////
     fn op_equate(&mut self) {
         println!("op_equate");
+
         if self.match_token(Tipo_Token::SIMBOLO_NOT)
                 || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
                 || self.match_token(Tipo_Token::SIMBOLO_MENOS)
@@ -952,32 +853,6 @@ impl Parser {
                 || self.match_token(Tipo_Token::ID)
                 || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                     self.op_equate_rec();
-        } else if  self.match_token(Tipo_Token::SIMBOLO_D_IGUAL)
-                || self.match_token(Tipo_Token::SIMBOLO_D_DIFERENTE)
-                || self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
-                || self.match_token(Tipo_Token::SIMBOLO_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_D_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_D_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_IGUAL)
-                || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-                || self.match_token(Tipo_Token::VIRGULA)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    return;
-        } else {
-            self.erro("op equate opt 2");
         }
     }
     fn op_equate_rec(&mut self) {
@@ -1054,36 +929,6 @@ impl Parser {
                 || self.match_token(Tipo_Token::ID)
                 || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                     self.op_compare_rec();
-        } else if self.match_token(Tipo_Token::SIMBOLO_MENOR_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_MAIOR_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOR_IGUAL_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
-                || self.match_token(Tipo_Token::SIMBOLO_D_IGUAL)
-                || self.match_token(Tipo_Token::SIMBOLO_D_DIFERENTE)
-                || self.match_token(Tipo_Token::SIMBOLO_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_D_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_D_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_IGUAL)
-                || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-                || self.match_token(Tipo_Token::VIRGULA)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    return;
-        } else {
-            self.erro("op_compare_opt_2");
         }
     }
     fn op_compare_rec(&mut self) {
@@ -1159,37 +1004,6 @@ impl Parser {
                 || self.match_token(Tipo_Token::ID)
                 || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                     self.op_add_rec();
-        } else if self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
-                || self.match_token(Tipo_Token::SIMBOLO_MAIS)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOR_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_MAIOR_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOR_IGUAL_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_D_IGUAL)
-                || self.match_token(Tipo_Token::SIMBOLO_D_DIFERENTE)
-                || self.match_token(Tipo_Token::SIMBOLO_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_D_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_D_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_IGUAL)
-                || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-                || self.match_token(Tipo_Token::VIRGULA)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    return;
-        } else {
-            self.erro("op add opt 2");
         }
     }
     fn op_add_rec(&mut self) {
@@ -1274,9 +1088,9 @@ impl Parser {
         println!("op_mult_opt");
         if self.match_token(Tipo_Token::SIMBOLO_MULTI)
             || self.match_token(Tipo_Token::SIMBOLO_DIV)
-                || self.match_token(Tipo_Token::SIMBOLO_MOD) {
-                    self.consumir_token();
-                    self.op_unary();
+            || self.match_token(Tipo_Token::SIMBOLO_MOD) {
+                self.consumir_token();
+                self.op_unary();
         }
     }
     fn op_mult_opt_2(&mut self) {
@@ -1295,40 +1109,6 @@ impl Parser {
                 || self.match_token(Tipo_Token::ID)
                 || self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                     self.op_mult_rec();
-        } else if self.match_token(Tipo_Token::SIMBOLO_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-                || self.match_token(Tipo_Token::OCTAL)
-                || self.match_token(Tipo_Token::HEX)
-                || self.match_token(Tipo_Token::INT)
-                || self.match_token(Tipo_Token::STR)
-                || self.match_token(Tipo_Token::CHAR)
-                || self.match_token(Tipo_Token::FLOAT)
-                || self.match_token(Tipo_Token::TRUE)
-                || self.match_token(Tipo_Token::FALSE)
-                || self.match_token(Tipo_Token::ID)
-                || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
-                || self.match_token(Tipo_Token::SIMBOLO_MULTI)
-                || self.match_token(Tipo_Token::SIMBOLO_DIV)
-                || self.match_token(Tipo_Token::SIMBOLO_MOD)
-                || self.match_token(Tipo_Token::SIMBOLO_MAIS)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOR_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_MAIOR_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_MENOR_IGUAL_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q)
-                || self.match_token(Tipo_Token::SIMBOLO_D_IGUAL)
-                || self.match_token(Tipo_Token::SIMBOLO_D_DIFERENTE)
-                || self.match_token(Tipo_Token::SIMBOLO_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_D_AND)
-                || self.match_token(Tipo_Token::SIMBOLO_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_D_OR)
-                || self.match_token(Tipo_Token::SIMBOLO_IGUAL)
-                || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-                || self.match_token(Tipo_Token::VIRGULA)
-                || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                    return;
-                } else {
-                    self.erro("op mult opt 2");
         }
     }
 
@@ -1337,7 +1117,7 @@ impl Parser {
         println!("op_unary");
         if self.match_token(Tipo_Token::SIMBOLO_NOT)
         || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-            || self.match_token(Tipo_Token::SIMBOLO_MENOS) {
+        || self.match_token(Tipo_Token::SIMBOLO_MENOS) {
                 self.consumir_token();
                 self.op_unary();
         } else if self.match_token(Tipo_Token::OCTAL)
@@ -1376,8 +1156,8 @@ impl Parser {
             self.expr();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                 self.consumir_token();
-            }
-        }
+            } else { self.erro(")"); }
+        } else { self.erro("("); }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1386,40 +1166,6 @@ impl Parser {
         if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
             self.consumir_token();
             self.id_opt_2();
-        } else if self.match_token(Tipo_Token::SIMBOLO_NOT)
-            || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
-            || self.match_token(Tipo_Token::SIMBOLO_MENOS)
-            || self.match_token(Tipo_Token::OCTAL)
-            || self.match_token(Tipo_Token::HEX)
-            || self.match_token(Tipo_Token::INT)
-            || self.match_token(Tipo_Token::STR)
-            || self.match_token(Tipo_Token::CHAR)
-            || self.match_token(Tipo_Token::FLOAT)
-            || self.match_token(Tipo_Token::TRUE)
-            || self.match_token(Tipo_Token::FALSE)
-            || self.match_token(Tipo_Token::ID)
-            || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
-            || self.match_token(Tipo_Token::SIMBOLO_MULTI)
-            || self.match_token(Tipo_Token::SIMBOLO_DIV)
-            || self.match_token(Tipo_Token::SIMBOLO_MOD)
-            || self.match_token(Tipo_Token::SIMBOLO_MAIS)
-            || self.match_token(Tipo_Token::SIMBOLO_MENOR_Q)
-            || self.match_token(Tipo_Token::SIMBOLO_MAIOR_Q)
-            || self.match_token(Tipo_Token::SIMBOLO_MENOR_IGUAL_Q)
-            || self.match_token(Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q)
-            || self.match_token(Tipo_Token::SIMBOLO_D_IGUAL)
-            || self.match_token(Tipo_Token::SIMBOLO_D_DIFERENTE)
-            || self.match_token(Tipo_Token::SIMBOLO_AND)
-            || self.match_token(Tipo_Token::SIMBOLO_OR)
-            || self.match_token(Tipo_Token::SIMBOLO_D_AND)
-            || self.match_token(Tipo_Token::SIMBOLO_D_OR)
-            || self.match_token(Tipo_Token::SIMBOLO_IGUAL)
-            || self.match_token(Tipo_Token::PARENTESE_DIREITO)
-            || self.match_token(Tipo_Token::VIRGULA)
-            || self.match_token(Tipo_Token::PONTO_VIRGULA) {
-                return;
-            } else {
-                self.erro("id opt");
         }
     }
     fn id_opt_2(&mut self) {
