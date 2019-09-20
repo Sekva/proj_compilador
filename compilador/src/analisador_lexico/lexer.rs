@@ -78,7 +78,7 @@ impl Lexer {
             self.comeco = self.char_atual;
             self.scan_token();
         }
-        self.lista_tokens.push(Token::novo(Tipo_Token::EOF, "".into(), "".into(), self.linha));
+        self.lista_tokens.push(Token::novo(Tipo_Token::EOF, "EOF".into(), "EOF".into(), self.linha));
     }
 
     fn scan_token(&mut self) {

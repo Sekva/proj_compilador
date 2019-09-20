@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Copy,Clone,PartialEq)]
+#[derive(Copy,Clone,PartialEq, Eq, Hash, Debug)]
 pub enum Tipo_Token {
 
     PARENTESE_ESQUERDO,
@@ -70,7 +70,8 @@ pub enum Tipo_Token {
 
 
 
-  EOF
+  EOF,
+  VAZIO
 
 }
 
@@ -130,6 +131,7 @@ impl fmt::Display for Tipo_Token {
             Tipo_Token::VIRGULA => "VIRGULA",
             Tipo_Token::VOID => "VOID",
             Tipo_Token::WHILE => "WHILE",
+            _ => ""
         };
         write!(f, "{}", printable)
     }

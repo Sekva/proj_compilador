@@ -1,0 +1,37 @@
+<Decls> -> <Decl> <Decls> | EPSILON
+<Decl> -> <Func_Decl> | <Var_Decl>
+<Func_Decl> -> "func" <Id> "(" <Func_ParamsOpt>
+<Func_ParamsOpt> -> <Params> ")" "returns" <Type> <Block> | ")" "returns" <Type> <Block>
+<Params> -> <Param> <ParamsOpt>
+<ParamsOpt> -> "," <Params> | EPSILON
+<Param> -> <Type> <Id>
+<Var_Decl> -> <Var> ";"
+<Var> -> <Type> <Id> <VarOpt>
+<VarOpt> -> "=" <Op_Or> |  EPSILON
+<Type> -> "char" | "str" | "int" | "float" | "void" | "bool"
+<Stm> -> <Var_Decl> | "if" "(" <Expr> ")" <Then_Stm> "else" <Then_Stm> | "while" "(" <Expr> ")" <Then_Stm> | <Normal_Stm>
+<Then_Stm> -> "if" "(" <Expr> ")" <Then_Stm> "else" <Then_Stm> | "while" "(" <Expr> ")" <Then_Stm> | <Normal_Stm>
+<Normal_Stm> -> <Block> | <Expr> ";" | "break" ";" | "continue" ";" | "return" <Expr> ";" | "printk" "(" <Op_Or> ")" ";" | ";"
+<Block> -> "{" <Stm_List> "}"
+<Stm_List> ->  <Stm> <Stm_List> | EPSILON
+<Expr> -> <Op_Or>
+<Op_Or> -> <Op_And> <Op_Or_Opt>
+<Op_Or_Opt> -> "//" <Op_And> | EPSILON
+<Op_And> -> <Op_BinOr> <Op_And_Opt>
+<Op_And_Opt> -> "&&" <Op_BinOr> | EPSILON
+<Op_BinOr> -> <Op_BinAND> <Op_BinOr_Opt>
+<Op_BinOr_Opt> -> "/" <Op_BinAND> | EPSILON
+<Op_BinAND> -> <Op_Equate> <Op_BinAND_Opt>
+<Op_BinAND_Opt> -> "&" <Op_Equate> | EPSILON
+<Op_Equate> -> <Op_Compare> <Op_Equate_Opt>
+<Op_Equate_Opt> -> "==" <Op_Compare> | "!=" <Op_Compare> | EPSILON
+<Op_Compare> -> <Op_Add> <Op_Compare_Opt>
+<Op_Compare_Opt> -> "<" <Op_Add> | ">" <Op_Add> | "<=" <Op_Add> | ">=" <Op_Add> | EPSILON
+<Op_Add> -> <Op_Mult> <Op_Add_Opt>
+<Op_Add_Opt> -> "+" <Op_Mult> | "-" <Op_Mult> | EPSILON
+<Op_Mult> -> <Op_Unary> <Op_Mult_Opt>
+<Op_Mult_Opt> -> "*" <Op_Unary> | ":" <Op_Unary> | "%" <Op_Unary> | EPSILON
+<Op_Unary> -> "!"  <Op_Unary> | "~"  <Op_Unary> | "-"  <Op_Unary> | <Value>
+<Value> -> <OctLiteral> | <HexLiteral> | <DecLiteral> | <StringLiteral> | <CharLiteral> | <FloatLiteral> | <BoolLiteral> | <Id> <Id_Opt> | "(" <Expr> ")"
+<Id_Opt> -> "(" <Id_Opt2> | EPSILON
+<Id_Opt2> -> <Expr> ")" | ")"
