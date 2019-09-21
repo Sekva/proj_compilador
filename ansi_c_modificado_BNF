@@ -18,7 +18,7 @@
 <ParamsOpt> ::= "," <Params>
               | <PalavraVazia>
 
-<Param> ::= <Type> <Id>
+<Param> ::= <Id> "as" <Type>
 
 
 
@@ -26,7 +26,7 @@
 
 <Var Decl> ::= <Var> ";"
 
-<Var> ::= <Type> <Id> <VarOpt>
+<Var> ::= <Id> "as" <Type> <VarOpt>
 
 <VarOpt> ::= "=" <Op Or>
            |  <PalavraVazia>

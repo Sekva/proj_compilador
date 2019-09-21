@@ -63,17 +63,15 @@ impl Parser {
 
     fn decls(&mut self) {
         if self.token_atual >= self.tokens.len() { return; }
+        if self.match_token(Tipo_Token::EOF) { return; }
         println!("decls\n");
         if self.match_token(Tipo_Token::FUNC)
-        || self.match_token(Tipo_Token::ID_CHAR)
-        || self.match_token(Tipo_Token::ID_STR)
-        || self.match_token(Tipo_Token::ID_INT)
-        || self.match_token(Tipo_Token::ID_FLOAT)
-        || self.match_token(Tipo_Token::ID_VOID)
-        || self.match_token(Tipo_Token::ID_BOOL)
+        || self.match_token(Tipo_Token::ID)
         {
             self.decl();
             self.decls();
+        } else {
+            self.erro("id ou func");
         }
 
     }
@@ -83,7 +81,7 @@ impl Parser {
         println!("decl\n");
         if self.match_token(Tipo_Token::FUNC) {
             self.func_decl();
-        } else if self.id_tipo() {
+        } else if self.match_token(Tipo_Token::ID) {
             self.var_decl();
         } else {
             self.erro("tipo ou func");
@@ -113,7 +111,7 @@ impl Parser {
     }
     fn func_params_opt(&mut self) {
         println!("func_params_opt");
-        if self.id_tipo() {
+        if self.match_token(Tipo_Token::ID) {
             self.params();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                 self.consumir_token();
@@ -142,8 +140,8 @@ impl Parser {
 
 
         else {
-            self.erro("identificador de tipo");
-            self.erro("g)");
+            self.erro("identificador");
+            self.erro(")");
         }
     }
     fn params(&mut self) {
@@ -160,13 +158,14 @@ impl Parser {
     }
     fn param(&mut self) {
         println!("param");
-        if self.id_tipo() {
+        if self.match_token(Tipo_Token::ID) {
             self.consumir_token();
-            if self.match_token(Tipo_Token::ID) {
+            if self.match_token(Tipo_Token::AS) {
                 self.consumir_token();
-            } else { self.erro("indentificador"); }
+                self.t_type();
+            } else { self.erro("as"); }
         } else {
-            self.erro("indentificador de tipo");
+            self.erro("indentificador");
         }
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -181,16 +180,17 @@ impl Parser {
     }
     fn var(&mut self) {
         println!("var");
-        if self.id_tipo() {
+        if self.match_token(Tipo_Token::ID) {
             self.consumir_token();
-            if self.match_token(Tipo_Token::ID) {
+            if self.match_token(Tipo_Token::AS) {
                 self.consumir_token();
+                self.t_type();
                 self.var_opt();
             } else {
-                self.erro("identificador");
+                self.erro("as");
             }
         } else {
-            self.erro("indentificador de tipo");
+            self.erro("indentificador");
         }
     }
     fn var_opt(&mut self) {
