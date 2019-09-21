@@ -229,10 +229,7 @@ impl Parser {
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
                     self.then_stm();
-                    if self.match_token(Tipo_Token::ELSE) {
-                        self.consumir_token();
-                        self.then_stm();
-                    } else { self.erro("else"); }
+                    self.if_opt();
                 } else { self.erro("a)"); }
             } else { self.erro("("); }
         }
@@ -279,14 +276,9 @@ impl Parser {
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
                     self.then_stm();
-                    if self.match_token(Tipo_Token::ELSE) {
-                        self.consumir_token();
-                        self.then_stm();
-                    } else {
-                        self.erro("else");
-                    }
+                    self.if_opt();
                 } else {
-                    self.erro("d)")
+                    self.erro(")")
                 }
             } else {
                 self.erro("(");
@@ -326,6 +318,15 @@ impl Parser {
             self.erro("muita coisa de novo no then_stm não");
         }
     }
+
+
+    fn if_opt(&mut self) {
+        if self.match_token(Tipo_Token::ELSE) {
+            self.consumir_token();
+            self.then_stm();
+        }
+    }
+
     fn normal_stm(&mut self) {
         println!("normal_stm");
 

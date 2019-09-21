@@ -5,7 +5,7 @@ func asd(x1 as int) returns bool {
 
     if ( x2 ) {
 
-    } else {}
+    }
 
 
 

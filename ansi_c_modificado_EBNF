@@ -9,8 +9,9 @@
 <Var> -> <Id> "as" <Type> <VarOpt>
 <VarOpt> -> "=" <Op_Or> |  EPSILON
 <Type> -> "char" | "str" | "int" | "float" | "void" | "bool"
-<Stm> -> <Var_Decl> | "if" "(" <Expr> ")" <Then_Stm> "else" <Then_Stm> | "while" "(" <Expr> ")" <Then_Stm> | <Normal_Stm>
-<Then_Stm> -> "if" "(" <Expr> ")" <Then_Stm> "else" <Then_Stm> | "while" "(" <Expr> ")" <Then_Stm> | <Normal_Stm>
+<Stm> -> <Var_Decl> | "if" "(" <Expr> ")" <Then_Stm> <If_Opt> | "while" "(" <Expr> ")" <Then_Stm> | <Normal_Stm>
+<Then_Stm> -> "if" "(" <Expr> ")" <Then_Stm> <If_Opt> | "while" "(" <Expr> ")" <Then_Stm> | <Normal_Stm>
+<If_Opt> -> "else" <Then_Stm> | EPSILON
 <Normal_Stm> -> <Block> | <Expr> ";" | "break" ";" | "continue" ";" | "return" <Expr> ";" | "printk" "(" <Op_Or> ")" ";" | ";"
 <Block> -> "{" <Stm_List> "}"
 <Stm_List> ->  <Stm> <Stm_List> | EPSILON

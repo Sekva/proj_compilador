@@ -47,14 +47,19 @@
 
 
 <Stm> ::= <Var Decl>
-        | "if" "(" <Expr> ")" <Then Stm> "else" <Then Stm>
+        | "if" "(" <Expr> ")" <Then Stm> <If_Opt>
         | "while" "(" <Expr> ")" <Then Stm>
         | <Normal Stm>
 
 
-<Then Stm> ::= "if" "(" <Expr> ")" <Then Stm> "else" <Then Stm>
+<Then Stm> ::= "if" "(" <Expr> ")" <Then Stm> <If_Opt>
              | "while" "(" <Expr> ")" <Then Stm>
              | <Normal Stm>
+
+
+<If_Opt> ::= "else" <Then Stm>
+           | <PalavraVazia>
+
 
 <Normal Stm> ::= <Block>
                | <Expr> ";"
