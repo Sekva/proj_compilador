@@ -180,8 +180,15 @@
 <Id Opt> ::= "(" <Id Opt2>
            | <PalavraVazia>
 
-<Id Opt2> ::= <Expr> ")"
+<Id Opt2> ::= <Expr_List> ")"
             | ")"
+
+
+<Expr_List> :: = <Expr> <Expr_List_Opt>
+
+<Expr_List_Opt> ::= "," <Expr_List>
+                  | <PalavraVazia>
+
 
 
 <Id Head> ::= <Letter>

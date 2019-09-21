@@ -29,7 +29,7 @@ impl Parser {
     }
 
     fn erro(&self, token : &str) {
-        println!(" {} esperado na linha {}", token, self.tokens[self.token_atual].linha());
+        println!(" {} esperado na linha {}", token, self.tokens[self.token_atual - 1].linha());
         println!(" encontrado {}", self.tokens[self.token_atual].lexema());
         std::process::exit(1);
     }
@@ -606,11 +606,24 @@ impl Parser {
         if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
             self.consumir_token();
         } else {
-            self.expr();
+            self.expr_list();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                 self.consumir_token();
             }
         }
      }
+
+    fn expr_list(&mut self) {
+        self.expr();
+        self.expr_list_opt();
+    }
+
+
+    fn expr_list_opt(&mut self) {
+        if self.match_token(Tipo_Token::VIRGULA) {
+            self.consumir_token();
+            self.expr_list();
+        }
+    }
 
 }
