@@ -18,7 +18,11 @@ fn main() {
         println!("{}", i);
     }
 
-    let mut parser = parser5::Parser::novo(tokens.clone());
+    // pra lembrar que fiz 5 parsers
+    //let mut parser = parser5::Parser::novo(tokens.clone());
+
+
+    let mut parser = parser::Parser::novo(tokens.clone());
     parser.iniciar_analise();
 
 }

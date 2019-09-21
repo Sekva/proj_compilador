@@ -18,7 +18,7 @@
 <ParamsOpt> ::= "," <Params>
               | <PalavraVazia>
 
-<Param> ::= <Id> "as" <Type>
+<Param> ::= <Type> <Id>
 
 
 
@@ -26,7 +26,7 @@
 
 <Var Decl> ::= <Var> ";"
 
-<Var> ::= <Id> "as" <Type> <VarOpt>
+<Var> ::= <Type> <Id> <VarOpt>
 
 <VarOpt> ::= "=" <Op Or>
            |  <PalavraVazia>
@@ -47,15 +47,9 @@
 
 
 <Stm> ::= <Var Decl>
-        | "if" "(" <Expr> ")" <IfOpt>
+        | "if" "(" <Expr> ")" <Then Stm> "else" <Then Stm>
         | "while" "(" <Expr> ")" <Then Stm>
         | <Normal Stm>
-
-<IfOpt> ::= <IfOptOpt>
-
-
-<IfOptOpt> ::= <Then Stm> "else" <Stm>
-             | <Stm>
 
 
 <Then Stm> ::= "if" "(" <Expr> ")" <Then Stm> "else" <Then Stm>
@@ -77,141 +71,91 @@
 
 
 
-
-
-<Expr> ::= <Op Assign> <ExprOpt>
-
-<ExprRec> ::= "," <Op Assign> <ExprOpt>
-
-<ExprOpt> ::= <ExprRec>
-            | <PalavraVazia>
+<Expr> ::= <Op Or>
 
 
 
 
 
+<Op Or> ::= <Op And> <Op_Or_Opt>
 
-
-
-
-
-<Op Assign> ::= <Op Or> <Op AssignOpt2>
-
-<Op AssignOpt2> ::= <Op AssignOpt>
-                  | <PalavraVazia>
-
-<Op AssignOpt> ::= "=" <Op Assign>
-
-
-
-
-
-<Op Or> ::= <Op And> <OpOrOpt>
-
-<OpOrRec> ::= <Op Or> "||" <Op And> <OpOrOpt>
-
-<OpOrOpt> ::= <OpOrRec>
-            | <PalavraVazia>
-
-
-
-
-
-<Op And> ::= <Op BinOr> <Op AndOpt>
-
-<OpAndRec> ::= <Op And> "&&" <Op BinOr> <Op AndOpt>
-
-<Op AndOpt> ::= <OpAndRec>
+<Op_Or_Opt> ::= "||" <Expr>
               | <PalavraVazia>
 
 
 
 
-
-<Op BinOr> ::= <Op BinAND> <Op BinOrOpt>
-
-<Op BinOrOpt> ::= <Op BinOrRec>
-                | <PalavraVazia>
-
-<Op BinOrRec> ::= <Op BinOr> "|" <Op BinAND> <Op BinOrOpt>
+<Op And> ::= <Op BinOr> <Op And_Opt>
 
 
-
-
-
-<Op BinAND> ::= <Op Equate> <Op BinANDOpt>
-
-<Op BinANDOpt>  ::= <Op BinANDRec>
-                  |  <PalavraVazia>
-
-<Op BinANDRec> ::= <Op BinAND> "&" <Op Equate> <Op BinANDOpt>
-
-
-
-
-
-<Op Equate> ::= <Op Compare> <Op EquateOpt2>
-
-<Op EquateOpt2> ::= <Op EquateRec>
-                  | <PalavraVazia>
-
-<Op EquateRec> ::= <Op Equate> <Op EquateOpt> <Op EquateOpt2>
-
-<Op EquateOpt> ::= "==" <Op Compare>
-                 | "!=" <Op Compare>
-
-
-
-
-
-<Op Compare> ::= <Op Add> <Op CompareOpt2>
-
-<Op CompareOpt2> ::= <Op CompareRec>
-                   | <PalavraVazia>
-
-<Op CompareRec> ::= <Op Compare> <Op CompareOpt> <Op CompareOpt2>
-
-<Op CompareOpt> ::= "<" <Op Add>
-                  | ">" <Op Add>
-                  | "<=" <Op Add>
-                  | ">=" <Op Add>
-
-
-
-
-
-<Op Add> ::= <Op Mult> <Op AddOpt2>
-
-<Op AddOpt2> ::= <Op AddRec>
+<Op And_Opt> ::= "&&" <Expr>
                | <PalavraVazia>
 
-<Op AddRec>  ::= <Op Add> <Op AddOpt> <Op AddOpt2>
-
-<Op AddOpt>  ::= "+" <Op Mult>
-               | "-" <Op Mult>
 
 
 
 
+<Op BinOr> ::= <Op BinAND> <Op BinOr_Opt>
 
-<Op Mult> ::= <Op Unary> <Op MultOpt2>
+<Op BinOr_Opt> ::= "|" <Expr>
+                 | <PalavraVazia>
 
-<Op MultRec> ::= <Op Mult> <Op MultOpt> <Op MultOpt2>
 
-<Op MultOpt> ::= "*" <Op Unary>
-               | "/" <Op Unary>
-               | "%" <Op Unary>
 
-<Op MultOpt2> ::= <Op MultRec>
+
+
+<Op BinAND> ::= <Op Equate> <Op BinAND_Opt>
+
+<Op BinAND_Opt> ::= "&" <Expr>
+                  | <PalavraVazia>
+
+
+
+
+
+<Op Equate> ::= <Op Compare> <Op Equate_Opt>
+
+<Op Equate_Opt> "==" <Expr>
+              | "!=" <Expr>
+              | <PalavraVazia>
+
+
+
+<Op Compare> ::= <Op Add> <Op Compare_Opt>
+
+<Op Compare_Opt> ::= "<" <Expr>
+                   | ">" <Expr>
+                   | "<=" <Expr>
+                   | ">=" <Expr>
+                   | <PalavraVazia>
+
+
+
+
+
+<Op Add> ::= <Op Mult> <Op Add_Opt>
+
+<Op Add_Opt> ::= "+" <Expr>
+               | "-" <Expr>
+               | <PalavraVazia>
+
+
+
+
+<Op Mult> ::= <Op Unary> <Op Mult_Opt>
+
+<Op Mult_Opt> ::= "*" <Expr>
+                | "/" <Expr>
+                | "%" <Expr>
                 | <PalavraVazia>
 
 
 
 
 
-<Op Unary> ::= "!"  <Op Unary>
-             | "~"  <Op Unary>
-             | "-"  <Op Unary>
+<Op Unary> ::= "!"  <Expr>
+             | "~"  <Expr>
+             | "-"  <Expr>
              | <Value>
 
 

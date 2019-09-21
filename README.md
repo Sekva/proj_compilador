@@ -5,8 +5,8 @@
 - Matheus Machado Vieira; [GitHub](https://github.com/sekva)
 ---
 ## Etapas
-- [ ] Analisador Léxico
-- [ ] Analisador Sintático
+- [x] Analisador Léxico
+- [x] Analisador Sintático
 - [ ] Analisador Semântico
 - [ ] Gerador de Código Intermediário
 - [ ] Otimizador de Código Dependente de Máquina

@@ -16,22 +16,22 @@
 <Stm_List> ->  <Stm> <Stm_List> | EPSILON
 <Expr> -> <Op_Or>
 <Op_Or> -> <Op_And> <Op_Or_Opt>
-<Op_Or_Opt> -> "//" <Op_And> | EPSILON
+<Op_Or_Opt> -> "//" <Op_Or> | EPSILON
 <Op_And> -> <Op_BinOr> <Op_And_Opt>
-<Op_And_Opt> -> "&&" <Op_BinOr> | EPSILON
+<Op_And_Opt> -> "&&" <Expr> | EPSILON
 <Op_BinOr> -> <Op_BinAND> <Op_BinOr_Opt>
-<Op_BinOr_Opt> -> "/" <Op_BinAND> | EPSILON
+<Op_BinOr_Opt> -> "/" <Expr> | EPSILON
 <Op_BinAND> -> <Op_Equate> <Op_BinAND_Opt>
-<Op_BinAND_Opt> -> "&" <Op_Equate> | EPSILON
+<Op_BinAND_Opt> -> "&" <Expr> | EPSILON
 <Op_Equate> -> <Op_Compare> <Op_Equate_Opt>
-<Op_Equate_Opt> -> "==" <Op_Compare> | "!=" <Op_Compare> | EPSILON
+<Op_Equate_Opt> -> "==" <Expr> | "!=" <Expr> | EPSILON
 <Op_Compare> -> <Op_Add> <Op_Compare_Opt>
-<Op_Compare_Opt> -> "<" <Op_Add> | ">" <Op_Add> | "<=" <Op_Add> | ">=" <Op_Add> | EPSILON
+<Op_Compare_Opt> -> "<" <Expr> | ">" <Expr> | "<=" <Expr> | ">=" <Expr> | EPSILON
 <Op_Add> -> <Op_Mult> <Op_Add_Opt>
-<Op_Add_Opt> -> "+" <Op_Mult> | "-" <Op_Mult> | EPSILON
+<Op_Add_Opt> -> "+" <Expr> | "-" <Expr> | EPSILON
 <Op_Mult> -> <Op_Unary> <Op_Mult_Opt>
-<Op_Mult_Opt> -> "*" <Op_Unary> | ":" <Op_Unary> | "%" <Op_Unary> | EPSILON
-<Op_Unary> -> "!"  <Op_Unary> | "~"  <Op_Unary> | "-"  <Op_Unary> | <Value>
+<Op_Mult_Opt> -> "*" <Expr> | ":" <Expr> | "%" <Expr> | EPSILON
+<Op_Unary> -> "!"  <Expr> | "~"  <Expr> | "-"  <Expr> | <Value>
 <Value> -> <OctLiteral> | <HexLiteral> | <DecLiteral> | <StringLiteral> | <CharLiteral> | <FloatLiteral> | <BoolLiteral> | <Id> <Id_Opt> | "(" <Expr> ")"
 <Id_Opt> -> "(" <Id_Opt2> | EPSILON
 <Id_Opt2> -> <Expr> ")" | ")"
