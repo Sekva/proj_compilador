@@ -1,12 +1,7 @@
-asdasd as bool = (x2 + 3 + 3 && asd() == 2 + 0x00);
+func asd() returns bool {
 
+    qwe as bool = true;
 
-func asd(x1 as int) returns bool {
-
-    if ( x2 ) {
-
-    }
-
-
+    qwe as int;
 
 }

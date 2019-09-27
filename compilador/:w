@@ -2,12 +2,16 @@ use crate::tabela_simbolos::escopo::*;
 
 use crate::tabela_simbolos::simbolo::Simbolo;
 
-#[derive(Clone)]
+use crate::analisador_lexico::token::*;
+use crate::analisador_lexico::tipo_token::*;
+
 pub struct TabelaSimbolos {
     global: ListaEscopo,
     indice_entrada: usize,
     indice_escopo: usize,
     escopo_atual: usize,
+
+    on_hold: Simbolo
 }
 
 impl TabelaSimbolos {
@@ -33,7 +37,7 @@ impl TabelaSimbolos {
         self.escopo_atual = self.global.pai_de(self.escopo_atual);
     }
 
-    pub fn add_simbolo(&mut self, s: Simbolo) -> usize {
+    pub fn add_simbolo(&mut self, mut t: Simbolo) -> usize {
 
         self.indice_entrada += 1;
 

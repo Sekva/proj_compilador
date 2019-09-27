@@ -1,8 +1,7 @@
 use std::fmt;
 
-#[derive(Copy,Clone,PartialEq, Eq, Hash, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum Tipo_Token {
-
     PARENTESE_ESQUERDO,
     PARENTESE_DIREITO,
 
@@ -68,13 +67,9 @@ pub enum Tipo_Token {
     BREAK,
     CONTINUE,
 
-
-
-  EOF,
-  VAZIO
-
+    EOF,
+    VAZIO,
 }
-
 
 impl fmt::Display for Tipo_Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -131,7 +126,7 @@ impl fmt::Display for Tipo_Token {
             Tipo_Token::VIRGULA => "VIRGULA",
             Tipo_Token::VOID => "VOID",
             Tipo_Token::WHILE => "WHILE",
-            _ => ""
+            _ => "",
         };
         write!(f, "{}", printable)
     }

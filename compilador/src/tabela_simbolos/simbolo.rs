@@ -1,33 +1,10 @@
-use crate::analisador_lexico::token::*;
-use crate::tabela_simbolos::parametro::*;
+use crate::analisador_lexico::tipo_token::Tipo_Token;
 
-#[derive(Copy,Clone,PartialEq)]
-pub enum TipoSimbolo {
-    Func,
-    Var,
+#[derive(Clone, PartialEq)]
+pub enum Simbolo {
+    // Nome, tipo, linha declarada
+    Var(String, Tipo_Token, usize),
+
+    //Nome, tipo retorno, num de parametros, lista de tipos dos parametros, linha declarada
+    Func(String, Tipo_Token, usize, Vec<Tipo_Token>, usize),
 }
-
-
-#[derive(Clone,PartialEq)]
-pub struct Simbolo {
-
-    nome : String,
-    tipo : TipoSimbolo,
-    atributo : String,
-    valor : Option<Token>,
-    parametros : Option<Parametros>,
-    indice : u64,
-
-}
-
-impl Simbolo {
-
-    pub fn nome      (&self) -> String             { self.nome.to_string() }
-    pub fn tipo      (&self) -> TipoSimbolo        { self.tipo }
-    pub fn atributo  (&self) -> String             { self.atributo.to_string() }
-    pub fn parametros(&self) -> Option<Parametros> { self.parametros.clone() }
-    pub fn indice    (&self) -> u64                { self.indice }
-
-}
-
-
