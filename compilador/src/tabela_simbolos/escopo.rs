@@ -1,4 +1,7 @@
 use crate::tabela_simbolos::simbolo::Simbolo;
+use crate::analisador_lexico::tipo_token::Tipo_Token;
+
+use prettytable::{Table, Row, Cell};
 
 #[derive(Clone, PartialEq)]
 pub struct Escopo {
@@ -21,8 +24,8 @@ impl Escopo {
     pub fn add_entrada(&mut self, s: Simbolo) {
         for i in 0..self.entradas.len() {
             match self.entradas[i].clone() {
-                Simbolo::Var(n, _t, _l) => match s.clone() {
-                    Simbolo::Var(n1, _t1, _l1) => {
+                Simbolo::Var(n, _t, _l, _) => match s.clone() {
+                    Simbolo::Var(n1, _t1, _l1, _) => {
                         if n1 == n {
                             panic!("1");
                         }
@@ -35,7 +38,7 @@ impl Escopo {
                     }
                 },
                 Simbolo::Func(n, _t, _l, _a, _b) => match s.clone() {
-                    Simbolo::Var(n1, _t1, _l1) => {
+                    Simbolo::Var(n1, _t1, _l1, _) => {
                         if n1 == n {
                             panic!("3");
                         }
@@ -74,10 +77,38 @@ impl Escopo {
 
     pub fn pegar(&self, indice: usize) -> Option<Simbolo> {
         None
+            //TODO:
     }
 
     pub fn atualizar(&mut self, indice: usize, simbolo: Simbolo) -> bool {
         false
+            //TODO:
+    }
+
+    pub fn printar(&self) {
+        println!("\n\nEscopo numero {}, filho de {}", self.escopo_num, self.escopo_pai);
+        let mut table = Table::new();
+        table.add_row(row!["NOME", "TIPO", "F/V", "PARAMS", "LINHA"]);
+
+        let mut nome_func: String = "".into();
+
+        for i in 0..self.entradas.len() {
+
+            match self.entradas[i].clone() {
+                Simbolo::Func(nome, tipo, n_params, _params, linha) => {
+                    table.add_row(row![nome, tipo, "F", n_params, linha]);
+                }
+                Simbolo::Var(nome, tipo, linha, func_nome) => {
+                    table.add_row(row![nome, tipo, "V", "-----", linha]);
+                    nome_func = func_nome.clone();
+                }
+            }
+
+        }
+
+        table.printstd();
+        println!("Escopo de {}", nome_func);
+        println!("\n\n");
     }
 }
 
@@ -103,9 +134,9 @@ impl ListaEscopo {
         self.escopos.push(e);
     }
 
-    pub fn pai_de(&self, i: usize) -> usize {
+    pub fn pai_de(&self, indice: usize) -> usize {
         for i in 0..self.escopos.len() {
-            if self.escopos[i].escopo_num == i {
+            if self.escopos[i].escopo_num == indice {
                 return self.escopos[i].escopo_pai;
             }
         }
@@ -113,14 +144,20 @@ impl ListaEscopo {
         panic!("aaaaaaaaa");
     }
 
-    pub fn add_simbolo_no_indice(&mut self, i: usize, s: Simbolo) {
+    pub fn add_simbolo_no_indice(&mut self, indice: usize, s: Simbolo) {
         for i in 0..self.escopos.len() {
-            if self.escopos[i].escopo_num == i {
+            if self.escopos[i].escopo_num == indice {
                 self.escopos[i].add_entrada(s);
                 return;
             }
         }
 
         panic!("asaaad");
+    }
+
+    pub fn printar(&self) {
+        for i in 0..self.escopos.len() {
+            self.escopos[i].printar();
+        }
     }
 }

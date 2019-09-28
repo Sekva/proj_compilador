@@ -7,6 +7,8 @@ use crate::analisador_sintatico::*;
 mod tabela_simbolos;
 use crate::tabela_simbolos::*;
 
+#[macro_use] extern crate prettytable;
+
 fn main() {
     let mut lexer = lexer::Lexer::novo("teste.asd".into());
     lexer.analisar();
@@ -21,4 +23,8 @@ fn main() {
 
     let mut parser = parser::Parser::novo(tokens.clone());
     parser.iniciar_analise();
+
+
+    parser.tabela_de_simbolos().printar();
+
 }
