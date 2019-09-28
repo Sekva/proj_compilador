@@ -367,6 +367,13 @@ impl Parser {
         if self.match_token(Tipo_Token::ID) && self.tokens[self.token_atual + 1].token() == Tipo_Token::AS { // diferenciar de uma expressão
             //println!("stm -> var_decl");
             self.var_decl();
+        } else if self.match_token(Tipo_Token::ID) && self.tokens[self.token_atual + 1].token() == Tipo_Token::SIMBOLO_IGUAL {
+            self.var_assign();
+            if self.match_token(Tipo_Token::PONTO_VIRGULA) {
+                self.consumir_token();
+            } else {
+                self.erro(";");
+            }
         } else if self.match_token(Tipo_Token::IF) {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
@@ -590,6 +597,16 @@ impl Parser {
             self.stm();
             //println!("stm_list -> stm_list");
             self.stm_list();
+        }
+    }
+
+    fn var_assign(&mut self) {
+        if self.match_token(Tipo_Token::ID) {
+            self.consumir_token();
+            if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
+                self.consumir_token();
+                self.expr();
+            }
         }
     }
 

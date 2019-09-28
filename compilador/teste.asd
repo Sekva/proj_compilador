@@ -12,8 +12,7 @@ func asd() returns bool {
     if (asd == true) {
         aeeee as bool = false;
     }
+
+    ff = asd(x3) + 3;
 }
 
-func qq() returns void {
-if (gggg < 3) {a as int;}
-}

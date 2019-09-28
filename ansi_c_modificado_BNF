@@ -47,6 +47,7 @@
 
 
 <Stm> ::= <Var Decl>
+        | <Var_Assign> ";"
         | "if" "(" <Expr> ")" <Then Stm> <If_Opt>
         | "while" "(" <Expr> ")" <Then Stm>
         | <Normal Stm>
@@ -74,6 +75,8 @@
 <Stm List> ::=  <Stm> <Stm List>
              | <PalavraVazia>
 
+
+<Var_Assign> ::= <Id> "=" <Expr>
 
 
 <Expr> ::= <Op Or>
