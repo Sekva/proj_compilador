@@ -5,9 +5,10 @@ mod analisador_sintatico;
 use crate::analisador_sintatico::*;
 
 mod tabela_simbolos;
-use crate::tabela_simbolos::*;
 
 #[macro_use] extern crate prettytable;
+
+
 
 fn main() {
     let mut lexer = lexer::Lexer::novo("teste.asd".into());

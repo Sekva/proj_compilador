@@ -1,5 +1,4 @@
 use crate::analisador_lexico::tipo_token::*;
-use crate::tabela_simbolos::simbolo::Simbolo;
 use std::fmt;
 
 #[derive(Clone)]

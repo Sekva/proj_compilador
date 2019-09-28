@@ -1,7 +1,6 @@
 use crate::tabela_simbolos::simbolo::Simbolo;
-use crate::analisador_lexico::tipo_token::Tipo_Token;
 
-use prettytable::{Table, Row, Cell};
+use prettytable::Table;
 
 #[derive(Clone, PartialEq)]
 pub struct Escopo {
@@ -88,6 +87,7 @@ impl Escopo {
     pub fn printar(&self) {
         println!("\n\nEscopo numero {}, filho de {}", self.escopo_num, self.escopo_pai);
         let mut table = Table::new();
+        //table.set_titles(row!["NOME", "TIPO", "F/V", "PARAMS", "LINHA"]);
         table.add_row(row!["NOME", "TIPO", "F/V", "PARAMS", "LINHA"]);
 
         let mut nome_func: String = "".into();
@@ -106,8 +106,10 @@ impl Escopo {
 
         }
 
+        //table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
+        //table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
         table.printstd();
-        println!("Escopo de {}", nome_func);
+        println!("\nEscopo de {}", nome_func);
         println!("\n\n");
     }
 }
