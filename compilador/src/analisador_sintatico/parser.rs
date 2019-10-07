@@ -4,6 +4,8 @@ use crate::analisador_lexico::token::*;
 use crate::tabela_simbolos::simbolo::*;
 use crate::tabela_simbolos::sym_tab::*;
 
+use colored::*;
+
 pub struct Parser {
     tokens: Vec<Token>,
     token_atual: usize,
@@ -48,12 +50,12 @@ impl Parser {
     }
 
     fn erro(&self, token: &str) {
-        println!(
-            " {} esperado na linha {}",
-            token,
+        print!(
+            " {} esperado na linha {}: ",
+            token.green(),
             self.tokens[self.token_atual - 1].linha()
         );
-        println!(" encontrado {}", self.tokens[self.token_atual].lexema());
+        println!(" encontrado a seguir {}", self.tokens[self.token_atual].lexema().red().underline());
         std::process::exit(1);
     }
 
