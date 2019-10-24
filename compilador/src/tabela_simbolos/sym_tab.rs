@@ -1,4 +1,5 @@
 use crate::tabela_simbolos::escopo::*;
+use crate::analisador_lexico::tipo_token::*;
 
 use crate::tabela_simbolos::simbolo::Simbolo;
 
@@ -45,12 +46,24 @@ impl TabelaSimbolos {
 
         // TODO: verificar em escopos pai
 
-        self.global.add_simbolo_no_indice(self.escopo_atual, s);
+
+        let novo_s : Simbolo;
+
+        match s {
+            Simbolo::Var(a, b, c, d, _e) => { novo_s = Simbolo::Var(a, b, c, d, self.indice_entrada - 1)},
+            Simbolo::Func(a, b, c, d, e, _f) => { novo_s = Simbolo::Func(a, b, c, d, e, self.indice_entrada - 1) },
+        }
+
+        self.global.add_simbolo_no_indice(self.escopo_atual, novo_s);
 
         return self.indice_entrada - 1;
     }
 
     pub fn printar(&self) {
         self.global.printar();
+    }
+
+    pub fn lookup(&self, entrada: usize) -> Option<Tipo_Token> {
+        self.global.lookup(entrada, self.escopo_atual)
     }
 }

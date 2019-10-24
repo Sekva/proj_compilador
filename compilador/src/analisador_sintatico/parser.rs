@@ -6,6 +6,18 @@ use crate::tabela_simbolos::sym_tab::*;
 
 use colored::*;
 
+
+
+enum RegVal {
+    ValInt(i128),
+    ValChar(char),
+    ValBool(bool),
+    ValStr(String),
+    ValFloat(f64),
+    Nop,
+}
+
+
 pub struct Parser {
     tokens: Vec<Token>,
     token_atual: usize,
@@ -14,6 +26,9 @@ pub struct Parser {
     on_hold: Option<Simbolo>,
     indice_on_hold: usize,
     nome_funcao: String,
+    reg_tipo: Tipo_Token,
+    reg_val: RegVal,
+    reg_num_params: usize,
 }
 
 impl Parser {
@@ -25,7 +40,10 @@ impl Parser {
             abre_escopo: true,
             on_hold: None,
             indice_on_hold: 0,
-            nome_funcao: "Global".into()
+            nome_funcao: "Global".into(),
+            reg_val: RegVal::Nop,
+            reg_tipo: Tipo_Token::VOID,
+            reg_num_params: 0,
         }
     }
 
@@ -43,6 +61,15 @@ impl Parser {
 
     fn match_token(&self, t: Tipo_Token) -> bool {
         self.tokens[self.token_atual].token() == t
+    }
+
+    fn tipo_atual(&self) -> Tipo_Token {
+        self.tokens[self.token_atual].token()
+    }
+
+    fn symtab_lookup(&self, entrada: usize) -> Tipo_Token {
+        //TODO: melhorar erro
+        self.tabela_de_simbolos.lookup(entrada).unwrap_or_else(|| panic!("entrada não encontrada na tabela de Simbolo") )
     }
 
     fn consumir_token(&mut self) {
@@ -77,8 +104,8 @@ impl Parser {
         let s2: Simbolo;
 
         match s {
-            Simbolo::Func(a, b, _c, d, e) => {
-                s2 = Simbolo::Func(a, b, d.len(), d, e);
+            Simbolo::Func(a, b, _c, d, e, f) => {
+                s2 = Simbolo::Func(a, b, d.len(), d, e, f);
             }
 
             _ => { panic!("ooooooooo"); }
@@ -102,8 +129,8 @@ impl Parser {
         self.nome_funcao = token.lexema();
 
         match t {
-            Simbolo::Func(_n, a, b, c, _d) => {
-                self.on_hold = Some(Simbolo::Func(token.lexema(), a, b, c, token.linha()))
+            Simbolo::Func(_n, a, b, c, _d, _e) => {
+                self.on_hold = Some(Simbolo::Func(token.lexema(), a, b, c, token.linha(), _e))
             }
             _ => { panic!("qqqq"); }
         }
@@ -117,8 +144,8 @@ impl Parser {
         let tipo = token.token();
 
         match t {
-            Simbolo::Func(n, _a, b, c, d) => {
-                self.on_hold = Some(Simbolo::Func(n, tipo, b, c, d));
+            Simbolo::Func(n, _a, b, c, d, e) => {
+                self.on_hold = Some(Simbolo::Func(n, tipo, b, c, d, e));
             }
             _ => { panic!("qqqq"); }
         }
@@ -132,9 +159,9 @@ impl Parser {
         let tipo = token.token();
 
         match t {
-            Simbolo::Func(n, a, b, mut c, d) => {
+            Simbolo::Func(n, a, b, mut c, d, e) => {
                 c.push(tipo);
-                self.on_hold = Some(Simbolo::Func(n, a, b, c, d));
+                self.on_hold = Some(Simbolo::Func(n, a, b, c, d, e));
             }
             _ => { panic!("qqqq"); }
         }
@@ -170,6 +197,7 @@ impl Parser {
     ///////////////////////////////////////////////////////////////////////////
 
     fn decls(&mut self) {
+            // TODO: semantica aqui
         if self.token_atual >= self.tokens.len() {
             return;
         }
@@ -188,6 +216,7 @@ impl Parser {
     }
 
     fn decl(&mut self) {
+            // TODO: semantica aqui
         //println!("decl\n");
         if self.match_token(Tipo_Token::FUNC) {
             //println!("decl -> func_decl");
@@ -201,12 +230,13 @@ impl Parser {
     }
     ///////////////////////////////////////////////////////////////////////////
     fn func_decl(&mut self) {
+            // TODO: semantica aqui
         //println!("func_decl");
         if self.match_token(Tipo_Token::FUNC) {
 
             self.abrir_escopo();
             self.abre_escopo = false;
-            self.on_hold = Some(Simbolo::Func("".into(), Tipo_Token::VOID, 0, vec![], 0));
+            self.on_hold = Some(Simbolo::Func("".into(), Tipo_Token::VOID, 0, vec![], 0, 0));
 
             self.consumir_token();
             if self.match_token(Tipo_Token::ID) {
@@ -230,6 +260,7 @@ impl Parser {
         }
     }
     fn func_params_opt(&mut self) {
+            // TODO: semantica aqui
         //println!("func_params_opt");
         if self.match_token(Tipo_Token::ID) {
             self.params();
@@ -271,6 +302,7 @@ impl Parser {
         }
     }
     fn params(&mut self) {
+            // TODO: semantica aqui
         //println!("params");
         //println!("params -> param");
         self.param();
@@ -278,6 +310,7 @@ impl Parser {
         self.params_opt();
     }
     fn params_opt(&mut self) {
+            // TODO: semantica aqui
         //println!("params_opt");
         if self.match_token(Tipo_Token::VIRGULA) {
             self.consumir_token();
@@ -286,6 +319,7 @@ impl Parser {
         }
     }
     fn param(&mut self) {
+            // TODO: semantica aqui
         //println!("param");
         if self.match_token(Tipo_Token::ID) {
 
@@ -297,7 +331,7 @@ impl Parser {
                 self.consumir_token();
                 //println!("param -> t_type");
 
-                let s = Simbolo::Var(id, self.tokens[self.token_atual].token(), self.tokens[self.token_atual].linha(), self.nome_funcao.clone());
+                let s = Simbolo::Var(id, self.tokens[self.token_atual].token(), self.tokens[self.token_atual].linha(), self.nome_funcao.clone(), 0);
                 self.add_direto(s, alvo);
                 self.add_on_hold_params();
 
@@ -311,6 +345,7 @@ impl Parser {
     }
     ///////////////////////////////////////////////////////////////////////////
     fn var_decl(&mut self) {
+            // TODO: semantica aqui
         //println!("var_decl");
         //println!("var_decl -> var");
         self.var();
@@ -321,6 +356,7 @@ impl Parser {
         }
     }
     fn var(&mut self) {
+            // TODO: semantica aqui
         //println!("var");
         if self.match_token(Tipo_Token::ID) {
 
@@ -332,7 +368,7 @@ impl Parser {
                 self.consumir_token();
                 //println!("var -> t_type");
 
-                let s = Simbolo::Var(id, self.tokens[self.token_atual].token(), self.tokens[self.token_atual].linha(), self.nome_funcao.clone());
+                let s = Simbolo::Var(id, self.tokens[self.token_atual].token(), self.tokens[self.token_atual].linha(), self.nome_funcao.clone(), 0);
                 self.add_direto(s, alvo);
 
                 self.t_type();
@@ -346,6 +382,7 @@ impl Parser {
         }
     }
     fn var_opt(&mut self) {
+            // TODO: semantica aqui
         //println!("var_opt");
         if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
             self.consumir_token();
@@ -355,6 +392,7 @@ impl Parser {
     }
     ///////////////////////////////////////////////////////////////////////////
     fn t_type(&mut self) {
+            // TODO: semantica aqui
         //println!("t_type");
         if self.id_tipo() {
             self.consumir_token();
@@ -364,6 +402,7 @@ impl Parser {
     }
     ///////////////////////////////////////////////////////////////////////////
     fn stm(&mut self) {
+            // TODO: semantica aqui
         //println!("\n\nstm\n\n");
 
         if self.match_token(Tipo_Token::ID) && self.tokens[self.token_atual + 1].token() == Tipo_Token::AS { // diferenciar de uma expressão
@@ -428,6 +467,7 @@ impl Parser {
         }
     }
     fn then_stm(&mut self) {
+            // TODO: semantica aqui
         //println!("then_stm");
         if self.match_token(Tipo_Token::IF) {
             self.consumir_token();
@@ -458,7 +498,7 @@ impl Parser {
                     //println!("then_stm -> then_stm");
                     self.then_stm();
                 } else {
-                    self.erro("h)");
+                    self.erro(")");
                 }
             } else {
                 self.erro("(");
@@ -482,6 +522,7 @@ impl Parser {
     }
 
     fn if_opt(&mut self) {
+            // TODO: semantica aqui
         if self.match_token(Tipo_Token::ELSE) {
             self.consumir_token();
             //println!("if_opt -> then_stm");
@@ -490,6 +531,7 @@ impl Parser {
     }
 
     fn normal_stm(&mut self) {
+            // TODO: semantica aqui
         //println!("normal_stm");
 
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
@@ -556,6 +598,7 @@ impl Parser {
         }
     }
     fn block(&mut self) {
+            // TODO: semantica aqui
         //println!("block");
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
             self.consumir_token();
@@ -580,6 +623,7 @@ impl Parser {
         }
     }
     fn stm_list(&mut self) {
+            // TODO: semantica aqui
         //println!("stm_list");
         if self.match_token(Tipo_Token::IF)
             || self.match_token(Tipo_Token::WHILE)
@@ -603,6 +647,7 @@ impl Parser {
     }
 
     fn var_assign(&mut self) {
+            // TODO: semantica aqui
         if self.match_token(Tipo_Token::ID) {
             self.consumir_token();
             if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
@@ -614,6 +659,7 @@ impl Parser {
 
     ///////////////////////////////////////////////////////////////////////////
     fn expr(&mut self) {
+            // TODO: semantica aqui
         //println!("expr");
         //println!("expr -> or_or");
         self.op_or();
@@ -622,6 +668,7 @@ impl Parser {
     fn op_or(&mut self) {
         //println!("op_or");
         //println!("or_or -> op_and");
+            // TODO: semantica aqui
         self.op_and();
         //println!("or_or -> op_or_opt");
         self.op_or_opt();
@@ -629,6 +676,7 @@ impl Parser {
     fn op_or_opt(&mut self) {
         //println!("op_or_opt");
         if self.match_token(Tipo_Token::SIMBOLO_D_OR) {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("op_or_opt -> expr");
             self.expr();
@@ -639,6 +687,7 @@ impl Parser {
     fn op_and(&mut self) {
         //println!("op_and");
         //println!("or_and -> op_bin_or");
+            // TODO: semantica aqui
         self.op_bin_or();
         //println!("or_and -> op_and_opt");
         self.op_and_opt();
@@ -646,6 +695,7 @@ impl Parser {
     fn op_and_opt(&mut self) {
         //println!("op_and_opt");
         if self.match_token(Tipo_Token::SIMBOLO_D_AND) {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("op_and_opt -> expr");
             self.expr();
@@ -656,6 +706,7 @@ impl Parser {
     fn op_bin_or(&mut self) {
         //println!("op_bin_or");
         //println!("op_bin_or -> op_bin_and");
+            // TODO: semantica aqui
         self.op_bin_and();
         //println!("op_bin_or -> op_bin_or_opt");
         self.op_bin_or_opt();
@@ -663,6 +714,7 @@ impl Parser {
     fn op_bin_or_opt(&mut self) {
         //println!("op_bin_or_opt");
         if self.match_token(Tipo_Token::SIMBOLO_OR) {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("op_bin_or_opt -> expr");
             self.expr();
@@ -672,6 +724,7 @@ impl Parser {
     fn op_bin_and(&mut self) {
         //println!("op_bin_and");
         //println!("op_bin_and -> op_equate");
+            // TODO: semantica aqui
         self.op_equate();
         //println!("op_bin_and -> op_bin_and_opt");
         self.op_bin_and_opt();
@@ -679,6 +732,7 @@ impl Parser {
     fn op_bin_and_opt(&mut self) {
         //println!("op_bin_and_opt");
         if self.match_token(Tipo_Token::SIMBOLO_AND) {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("op_bin_and_opt -> expr");
             self.expr();
@@ -688,6 +742,7 @@ impl Parser {
     fn op_equate(&mut self) {
         //println!("op_equate");
         //println!("op_equate -> op_compare");
+            // TODO: semantica aqui
         self.op_compare();
         //println!("op_equate -> op_compare_opt");
         self.op_equate_opt();
@@ -695,10 +750,12 @@ impl Parser {
     fn op_equate_opt(&mut self) {
         //println!("op_equate_opt");
         if self.match_token(Tipo_Token::SIMBOLO_D_IGUAL) {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("op_equate_opt -> expr");
             self.expr();
         } else if self.match_token(Tipo_Token::SIMBOLO_D_DIFERENTE) {
+            // TODO: semantica aqui
             self.consumir_token();
             self.expr();
             //println!("op_equate_opt -> expr");
@@ -711,6 +768,7 @@ impl Parser {
     fn op_compare(&mut self) {
         //println!("op_compare");
         //println!("op_compare -> op_add");
+            // TODO: semantica aqui
         self.op_add();
         //println!("op_compare -> op_compare_opt");
         self.op_compare_opt();
@@ -722,6 +780,7 @@ impl Parser {
             || self.match_token(Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q)
             || self.match_token(Tipo_Token::SIMBOLO_MENOR_IGUAL_Q)
         {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("op_compare_opt -> expr");
             self.expr();
@@ -732,6 +791,7 @@ impl Parser {
     fn op_add(&mut self) {
         //println!("op_add");
         //println!("op_add -> op_mult");
+            // TODO: semantica aqui
         self.op_mult();
         //println!("op_add -> op_add_opt");
         self.op_add_opt();
@@ -740,6 +800,7 @@ impl Parser {
         //println!("op_add_opt");
         if self.match_token(Tipo_Token::SIMBOLO_MAIS) || self.match_token(Tipo_Token::SIMBOLO_MENOS)
         {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("op_add_opt -> expr");
             self.expr();
@@ -750,6 +811,7 @@ impl Parser {
     fn op_mult(&mut self) {
         //println!("op_mult");
         //println!("op_mult -> op_unary");
+            // TODO: semantica aqui
         self.op_unary();
         //println!("op_mult -> op_mult_opt");
         self.op_mult_opt();
@@ -760,6 +822,7 @@ impl Parser {
             || self.match_token(Tipo_Token::SIMBOLO_DIV)
             || self.match_token(Tipo_Token::SIMBOLO_MOD)
         {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("op_mult_opt -> expr");
             self.expr();
@@ -770,6 +833,7 @@ impl Parser {
     fn op_unary(&mut self) {
         //println!("op_unary");
         if self.e_unaria() {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("op_unary -> expr");
             self.expr();
@@ -791,22 +855,55 @@ impl Parser {
             || self.match_token(Tipo_Token::TRUE)
             || self.match_token(Tipo_Token::FALSE)
         {
+
+            // --------------------------- Semantica -------------------------------------------------------
+            match self.tipo_atual() {
+                Tipo_Token::OCTAL => self.reg_val = RegVal::ValInt(self.tokens[self.token_atual].valor_int().unwrap()),
+                Tipo_Token::HEX   => self.reg_val = RegVal::ValInt(self.tokens[self.token_atual].valor_int().unwrap()),
+                Tipo_Token::INT   => self.reg_val = RegVal::ValInt(self.tokens[self.token_atual].valor_int().unwrap()),
+
+                Tipo_Token::STR   => self.reg_val = RegVal::ValStr(self.tokens[self.token_atual].valor_str().unwrap()),
+
+                Tipo_Token::CHAR  => self.reg_val = RegVal::ValChar(self.tokens[self.token_atual].valor_char().unwrap()),
+
+                Tipo_Token::FLOAT => self.reg_val = RegVal::ValFloat(self.tokens[self.token_atual].valor_float().unwrap()),
+
+                Tipo_Token::TRUE  => self.reg_val = RegVal::ValBool(self.tokens[self.token_atual].valor_bool().unwrap()),
+                Tipo_Token::FALSE => self.reg_val = RegVal::ValBool(self.tokens[self.token_atual].valor_bool().unwrap()),
+
+
+                _ => {}
+            }
+
+            match self.tipo_atual() {
+                Tipo_Token::OCTAL => self.reg_tipo = Tipo_Token::INT,
+                Tipo_Token::HEX   => self.reg_tipo = Tipo_Token::INT,
+                Tipo_Token::INT   => self.reg_tipo = Tipo_Token::INT,
+
+                _ => self.reg_tipo = self.tipo_atual()
+            }
+
+            // -------------------------------------------------------------------------------------------
+
+
             self.consumir_token();
         } else if self.match_token(Tipo_Token::ID) {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("value -> id_opt");
             self.id_opt();
         } else if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
+            // TODO: semantica aqui
             self.consumir_token();
             //println!("value -> expr");
             self.expr();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                 self.consumir_token();
             } else {
-                self.erro("f)");
+                self.erro(")");
             }
         } else {
-            self.erro("(");
+            self.erro("expressão ou valor");
         }
     }
 

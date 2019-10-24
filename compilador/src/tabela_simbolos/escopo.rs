@@ -1,4 +1,5 @@
 use crate::tabela_simbolos::simbolo::Simbolo;
+use crate::analisador_lexico::tipo_token::*;
 
 use prettytable::Table;
 use colored::*;
@@ -24,27 +25,27 @@ impl Escopo {
     pub fn add_entrada(&mut self, s: Simbolo) {
         for i in 0..self.entradas.len() {
             match self.entradas[i].clone() {
-                Simbolo::Var(n, _t, _l, _) => match s.clone() {
-                    Simbolo::Var(n1, _t1, _l1, _) => {
+                Simbolo::Var(n, _t, _l, _a, _b) => match s.clone() {
+                    Simbolo::Var(n1, _t1, _l1, _a, _b) => {
                         if n1 == n {
                             panic!("1");
                         }
                     }
 
-                    Simbolo::Func(n1, _t1, _l1, _a1, _b1) => {
+                    Simbolo::Func(n1, _t1, _l1, _a1, _b1, _) => {
                         if n1 == n {
                             panic!("2");
                         }
                     }
                 },
-                Simbolo::Func(n, _t, _l, _a, _b) => match s.clone() {
-                    Simbolo::Var(n1, _t1, _l1, _) => {
+                Simbolo::Func(n, _t, _l, _a, _b, _c) => match s.clone() {
+                    Simbolo::Var(n1, _t1, _l1, _, _d) => {
                         if n1 == n {
                             panic!("3");
                         }
                     }
 
-                    Simbolo::Func(n1, _t1, _l1, _a1, _b1) => {
+                    Simbolo::Func(n1, _t1, _l1, _a1, _b1, _) => {
                         if n1 == n {
                             panic!("4");
                         }
@@ -91,19 +92,19 @@ impl Escopo {
 
         println!("\n\nEscopo numero {}, filho de {}", self.escopo_num.to_string().green(), self.escopo_pai.to_string().purple());
         let mut table = Table::new();
-        table.set_titles(row!["NOME", "TIPO", "F/V", "PARAMS", "LINHA"]);
-        //table.add_row(row!["NOME", "TIPO", "F/V", "PARAMS", "LINHA"]);
+        table.set_titles(row!["NOME", "TIPO", "F/V", "PARAMS", "LINHA", "ENTRADA"]);
+        //table.add_row(row!["NOME", "TIPO", "F/V", "PARAMS", "LINHA", "ENTRADA"]);
 
         let mut nome_func: String = "".into();
 
         for i in 0..self.entradas.len() {
 
             match self.entradas[i].clone() {
-                Simbolo::Func(nome, tipo, n_params, _params, linha) => {
-                    table.add_row(row![nome, tipo, "F", n_params, linha]);
+                Simbolo::Func(nome, tipo, n_params, _params, linha, entrada) => {
+                    table.add_row(row![nome, tipo, "F", n_params, linha, entrada]);
                 }
-                Simbolo::Var(nome, tipo, linha, func_nome) => {
-                    table.add_row(row![nome, tipo, "V", "-----", linha]);
+                Simbolo::Var(nome, tipo, linha, func_nome, entrada) => {
+                    table.add_row(row![nome, tipo, "V", "-----", linha, entrada]);
                     nome_func = func_nome.clone();
                 }
             }
@@ -165,5 +166,38 @@ impl ListaEscopo {
         for i in 0..self.escopos.len() {
             self.escopos[i].printar();
         }
+    }
+
+    pub fn lookup(&self, entrada: usize, escopo: usize) -> Option<Tipo_Token> {
+
+        for i in 0..self.escopos.len() {
+            if self.escopos[i].escopo_num == escopo {
+
+                let mut escopo_observado : usize = escopo;
+                let mut ultimo_escopo_observado : usize;
+
+                loop {
+
+                    for j in 0..self.escopos[i].entradas.len() {
+                        match self.escopos[i].entradas[j].clone() {
+                            Simbolo::Var(_a, b, _c, _d, e) => if e == entrada { return Some(b) },
+                            Simbolo::Func(_a, b, _c, _d, _e, f) => if f == entrada {return Some(b) },
+                        }
+                    }
+
+                    ultimo_escopo_observado = escopo_observado;
+                    escopo_observado = self.pai_de(escopo_observado);
+
+                    if ultimo_escopo_observado == escopo_observado {
+                        return None;
+                    }
+
+                }
+            }
+        }
+
+
+
+        return None;
     }
 }
