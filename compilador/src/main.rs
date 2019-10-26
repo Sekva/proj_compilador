@@ -15,17 +15,11 @@ fn main() {
     lexer.analisar();
     let tokens = lexer.tokens();
 
-    for i in tokens {
-        //        println!("{}", i);
-    }
-
     // pra lembrar que fiz 5 parsers
     //let mut parser = parser5::Parser::novo(tokens.clone());
 
     let mut parser = parser::Parser::novo(tokens.clone());
     parser.iniciar_analise();
-
-
     parser.tabela_de_simbolos().printar();
 
 }

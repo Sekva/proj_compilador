@@ -6,8 +6,10 @@ use crate::tabela_simbolos::sym_tab::*;
 
 use colored::*;
 
+use std::fmt;
 
 
+#[derive(Clone, PartialEq, Debug)]
 enum RegVal {
     ValInt(i128),
     ValChar(char),
@@ -16,6 +18,26 @@ enum RegVal {
     ValFloat(f64),
     Nop,
 }
+
+
+impl fmt::Display for RegVal {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let printable = match &*self {
+            RegVal::Nop => "void".to_string(),
+            RegVal::ValBool(v) => v.to_string(),
+            RegVal::ValChar(v) => v.to_string(),
+            RegVal::ValFloat(v) => v.to_string(),
+            RegVal::ValInt(v) => v.to_string(),
+            RegVal::ValStr(v) => v.to_string(),
+        };
+
+        write!(f, "{}", printable)
+    }
+}
+
+/*
+ * Expressões com mais de um operador só funcionam dois a dois, ou parenteses e tudo ok
+ */
 
 
 pub struct Parser {
@@ -204,11 +226,8 @@ impl Parser {
         if self.match_token(Tipo_Token::EOF) {
             return;
         }
-        //println!("decls\n");
         if self.match_token(Tipo_Token::FUNC) || self.match_token(Tipo_Token::ID) {
-            //println!("decls -> decl");
             self.decl();
-            //println!("decls -> decls");
             self.decls();
         } else {
             self.erro("id ou func");
@@ -217,12 +236,9 @@ impl Parser {
 
     fn decl(&mut self) {
             // TODO: semantica aqui
-        //println!("decl\n");
         if self.match_token(Tipo_Token::FUNC) {
-            //println!("decl -> func_decl");
             self.func_decl();
         } else if self.match_token(Tipo_Token::ID) {
-            //println!("decl -> var_decl");
             self.var_decl();
         } else {
             self.erro("tipo ou func");
@@ -231,7 +247,6 @@ impl Parser {
     ///////////////////////////////////////////////////////////////////////////
     fn func_decl(&mut self) {
             // TODO: semantica aqui
-        //println!("func_decl");
         if self.match_token(Tipo_Token::FUNC) {
 
             self.abrir_escopo();
@@ -247,7 +262,6 @@ impl Parser {
                 self.consumir_token();
                 if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                     self.consumir_token();
-                    //println!("func_decl -> func_params_opt");
                     self.func_params_opt();
                 } else {
                     self.erro("(");
@@ -261,7 +275,6 @@ impl Parser {
     }
     fn func_params_opt(&mut self) {
             // TODO: semantica aqui
-        //println!("func_params_opt");
         if self.match_token(Tipo_Token::ID) {
             self.params();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
@@ -272,9 +285,7 @@ impl Parser {
                     self.set_tipo_on_hold();
                     self.add_simbolo();
 
-                    //println!("func_params_opt -> t_type");
                     self.t_type();
-                    //println!("func_params_opt -> block");
                     self.block();
                     self.nome_funcao = "Global".into();
                 } else {
@@ -289,9 +300,7 @@ impl Parser {
                 self.set_tipo_on_hold();
                 self.add_simbolo();
 
-                //println!("func_params_opt -> t_type");
                 self.t_type();
-                //println!("func_params_opt -> block");
                 self.block();
             } else {
                 self.erro("returns");
@@ -303,24 +312,18 @@ impl Parser {
     }
     fn params(&mut self) {
             // TODO: semantica aqui
-        //println!("params");
-        //println!("params -> param");
         self.param();
-        //println!("params -> param_opt");
         self.params_opt();
     }
     fn params_opt(&mut self) {
             // TODO: semantica aqui
-        //println!("params_opt");
         if self.match_token(Tipo_Token::VIRGULA) {
             self.consumir_token();
-            //println!("params_opt -> params");
             self.params();
         }
     }
     fn param(&mut self) {
             // TODO: semantica aqui
-        //println!("param");
         if self.match_token(Tipo_Token::ID) {
 
             let id = self.tokens[self.token_atual].lexema();
@@ -329,7 +332,6 @@ impl Parser {
             self.consumir_token();
             if self.match_token(Tipo_Token::AS) {
                 self.consumir_token();
-                //println!("param -> t_type");
 
                 let s = Simbolo::Var(id, self.tokens[self.token_atual].token(), self.tokens[self.token_atual].linha(), self.nome_funcao.clone(), 0);
                 self.add_direto(s, alvo);
@@ -346,18 +348,16 @@ impl Parser {
     ///////////////////////////////////////////////////////////////////////////
     fn var_decl(&mut self) {
             // TODO: semantica aqui
-        //println!("var_decl");
-        //println!("var_decl -> var");
         self.var();
         if self.match_token(Tipo_Token::PONTO_VIRGULA) {
             self.consumir_token();
         } else {
             self.erro(";");
         }
+            println!("aaaaaaaaaaaa {}", self.reg_val);
     }
     fn var(&mut self) {
             // TODO: semantica aqui
-        //println!("var");
         if self.match_token(Tipo_Token::ID) {
 
             let id = self.tokens[self.token_atual].lexema();
@@ -366,13 +366,11 @@ impl Parser {
             self.consumir_token();
             if self.match_token(Tipo_Token::AS) {
                 self.consumir_token();
-                //println!("var -> t_type");
 
                 let s = Simbolo::Var(id, self.tokens[self.token_atual].token(), self.tokens[self.token_atual].linha(), self.nome_funcao.clone(), 0);
                 self.add_direto(s, alvo);
 
                 self.t_type();
-                //println!("var -> var_opt");
                 self.var_opt();
             } else {
                 self.erro("as");
@@ -383,17 +381,14 @@ impl Parser {
     }
     fn var_opt(&mut self) {
             // TODO: semantica aqui
-        //println!("var_opt");
         if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
             self.consumir_token();
-            //println!("var_opt -> op_or");
             self.op_or();
         }
     }
     ///////////////////////////////////////////////////////////////////////////
     fn t_type(&mut self) {
             // TODO: semantica aqui
-        //println!("t_type");
         if self.id_tipo() {
             self.consumir_token();
         } else {
@@ -403,10 +398,8 @@ impl Parser {
     ///////////////////////////////////////////////////////////////////////////
     fn stm(&mut self) {
             // TODO: semantica aqui
-        //println!("\n\nstm\n\n");
 
         if self.match_token(Tipo_Token::ID) && self.tokens[self.token_atual + 1].token() == Tipo_Token::AS { // diferenciar de uma expressão
-            //println!("stm -> var_decl");
             self.var_decl();
         } else if self.match_token(Tipo_Token::ID) && self.tokens[self.token_atual + 1].token() == Tipo_Token::SIMBOLO_IGUAL {
             self.var_assign();
@@ -419,13 +412,10 @@ impl Parser {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
-                //println!("stm -> expr");
                 self.expr();
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
-                    //println!("stm -> then_stm");
                     self.then_stm();
-                    //println!("stm -> if_opt");
                     self.if_opt();
                 } else {
                     self.erro(")");
@@ -437,11 +427,9 @@ impl Parser {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
-                //println!("stm -> expr");
                 self.expr();
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
-                    //println!("stm -> then_stm");
                     self.then_stm();
                 } else {
                     self.erro(")");
@@ -460,7 +448,6 @@ impl Parser {
             || self.match_token(Tipo_Token::ID)
             || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
         {
-            //println!("stm -> normal_stm");
             self.normal_stm();
         } else {
             self.erro("stm")
@@ -468,18 +455,14 @@ impl Parser {
     }
     fn then_stm(&mut self) {
             // TODO: semantica aqui
-        //println!("then_stm");
         if self.match_token(Tipo_Token::IF) {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
-                //println!("then_stm -> expr");
                 self.expr();
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
-                    //println!("then_stm -> then_stm");
                     self.then_stm();
-                    //println!("then_stm -> if_opt");
                     self.if_opt();
                 } else {
                     self.erro(")")
@@ -491,11 +474,9 @@ impl Parser {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
-                //println!("then_stm -> expr");
                 self.expr();
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
-                    //println!("then_stm -> then_stm");
                     self.then_stm();
                 } else {
                     self.erro(")");
@@ -514,7 +495,6 @@ impl Parser {
             || self.match_token(Tipo_Token::ID)
             || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
         {
-            //println!("then_stm -> normal_stm");
             self.normal_stm();
         } else {
             self.erro("muita coisa de novo no then_stm não");
@@ -525,17 +505,14 @@ impl Parser {
             // TODO: semantica aqui
         if self.match_token(Tipo_Token::ELSE) {
             self.consumir_token();
-            //println!("if_opt -> then_stm");
             self.then_stm();
         }
     }
 
     fn normal_stm(&mut self) {
             // TODO: semantica aqui
-        //println!("normal_stm");
 
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
-            //println!("normal_stm -> block");
             self.block();
         } else if self.match_token(Tipo_Token::BREAK) {
             self.consumir_token();
@@ -555,7 +532,6 @@ impl Parser {
             self.consumir_token();
         } else if self.match_token(Tipo_Token::RETURN) {
             self.consumir_token();
-            //println!("normal_stm -> expr");
             self.expr();
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
@@ -566,7 +542,6 @@ impl Parser {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
-                //println!("normal_stm -> op_or");
                 self.op_or();
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
@@ -586,7 +561,6 @@ impl Parser {
             || self.match_token(Tipo_Token::ID)
             || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
         {
-            //println!("normal_stm -> expr");
             self.expr();
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
@@ -599,7 +573,6 @@ impl Parser {
     }
     fn block(&mut self) {
             // TODO: semantica aqui
-        //println!("block");
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
             self.consumir_token();
 
@@ -610,7 +583,6 @@ impl Parser {
             }
 
 
-            //println!("block -> stm_list");
             self.stm_list();
             if self.match_token(Tipo_Token::CHAVE_DIREITA) {
                 self.consumir_token();
@@ -624,7 +596,6 @@ impl Parser {
     }
     fn stm_list(&mut self) {
             // TODO: semantica aqui
-        //println!("stm_list");
         if self.match_token(Tipo_Token::IF)
             || self.match_token(Tipo_Token::WHILE)
             || self.id_tipo()
@@ -639,9 +610,7 @@ impl Parser {
             || self.match_token(Tipo_Token::ID)
             || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
         {
-            //println!("stm -> stm_list");
             self.stm();
-            //println!("stm_list -> stm_list");
             self.stm_list();
         }
     }
@@ -659,193 +628,477 @@ impl Parser {
 
     ///////////////////////////////////////////////////////////////////////////
     fn expr(&mut self) {
-            // TODO: semantica aqui
-        //println!("expr");
-        //println!("expr -> or_or");
         self.op_or();
     }
     ///////////////////////////////////////////////////////////////////////////
     fn op_or(&mut self) {
-        //println!("op_or");
-        //println!("or_or -> op_and");
-            // TODO: semantica aqui
         self.op_and();
-        //println!("or_or -> op_or_opt");
         self.op_or_opt();
     }
     fn op_or_opt(&mut self) {
-        //println!("op_or_opt");
         if self.match_token(Tipo_Token::SIMBOLO_D_OR) {
-            // TODO: semantica aqui
+
+            let regval1 = self.reg_val.clone();
+            let _op = self.tipo_atual().clone();
+
             self.consumir_token();
-            //println!("op_or_opt -> expr");
             self.expr();
+
+            let regval2 = self.reg_val.clone();
+
+            match regval1 {
+                RegVal::ValBool(u) => {
+                    match regval2 {
+                        RegVal::ValBool(v) => {
+                            self.reg_tipo = Tipo_Token::BOOL;
+                            self.reg_val = RegVal::ValBool(u || v);
+                        },
+                        _ => { panic!("Or de booleanos apenas com booleanos"); }
+                    }
+                },
+                _ => { panic!("Or apenas entre booleanos."); }
+            }
+
+
+        // fim
+
+
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     fn op_and(&mut self) {
-        //println!("op_and");
-        //println!("or_and -> op_bin_or");
-            // TODO: semantica aqui
         self.op_bin_or();
-        //println!("or_and -> op_and_opt");
         self.op_and_opt();
     }
     fn op_and_opt(&mut self) {
-        //println!("op_and_opt");
         if self.match_token(Tipo_Token::SIMBOLO_D_AND) {
-            // TODO: semantica aqui
+
+            let regval1 = self.reg_val.clone();
+            let _op = self.tipo_atual().clone();
+
             self.consumir_token();
-            //println!("op_and_opt -> expr");
             self.expr();
+
+            let regval2 = self.reg_val.clone();
+
+            match regval1 {
+                RegVal::ValBool(u) => {
+                    match regval2 {
+                        RegVal::ValBool(v) => {
+                            self.reg_tipo = Tipo_Token::BOOL;
+                            self.reg_val = RegVal::ValBool(u && v);
+                        },
+                        _ => { panic!("And de booleanos apenas com booleanos"); }
+                    }
+                },
+                _ => { panic!("And apenas entre booleanos."); }
+            }
+
+
+        // fim
+
+
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     fn op_bin_or(&mut self) {
-        //println!("op_bin_or");
-        //println!("op_bin_or -> op_bin_and");
-            // TODO: semantica aqui
         self.op_bin_and();
-        //println!("op_bin_or -> op_bin_or_opt");
         self.op_bin_or_opt();
     }
     fn op_bin_or_opt(&mut self) {
-        //println!("op_bin_or_opt");
         if self.match_token(Tipo_Token::SIMBOLO_OR) {
-            // TODO: semantica aqui
+
+
+            let regval1 = self.reg_val.clone();
+            let _op = self.tipo_atual().clone();
+
             self.consumir_token();
-            //println!("op_bin_or_opt -> expr");
             self.expr();
+
+            let regval2 = self.reg_val.clone();
+
+
+
+            match regval1 {
+                RegVal::ValInt(u) => {
+                    match regval2 {
+                        RegVal::ValInt(v) => {
+                            self.reg_tipo = Tipo_Token::INT;
+                            self.reg_val = RegVal::ValInt(u | v);
+                        },
+                        _ => { panic!("Or binario de INT apenas com INT"); },
+                    }
+                },
+                RegVal::ValBool(u) => {
+                    match regval2 {
+                        RegVal::ValBool(v) => {
+                            self.reg_tipo = Tipo_Token::BOOL;
+                            self.reg_val = RegVal::ValBool(u | v);
+                        },
+                        _ => { panic!("Or binario de booleanos apenas com booleanos"); }
+                    }
+                },
+                _ => { panic!("Or binario apenas entre valores numericos inteiros e booleanos apenas."); }
+            }
+
+
+        // fim
+
         }
     }
     ///////////////////////////////////////////////////////////////////////////
     fn op_bin_and(&mut self) {
-        //println!("op_bin_and");
-        //println!("op_bin_and -> op_equate");
-            // TODO: semantica aqui
         self.op_equate();
-        //println!("op_bin_and -> op_bin_and_opt");
         self.op_bin_and_opt();
     }
     fn op_bin_and_opt(&mut self) {
-        //println!("op_bin_and_opt");
         if self.match_token(Tipo_Token::SIMBOLO_AND) {
-            // TODO: semantica aqui
+
+            let regval1 = self.reg_val.clone();
+            let _op = self.tipo_atual().clone();
+
             self.consumir_token();
-            //println!("op_bin_and_opt -> expr");
             self.expr();
+
+            let regval2 = self.reg_val.clone();
+
+
+            match regval1 {
+                RegVal::ValInt(u) => {
+                    match regval2 {
+                        RegVal::ValInt(v) => {
+                            self.reg_tipo = Tipo_Token::INT;
+                            self.reg_val = RegVal::ValInt(u & v);
+                        },
+                        _ => { panic!("And binario de INT apenas com INT"); },
+                    }
+                },
+                RegVal::ValBool(u) => {
+                    match regval2 {
+                        RegVal::ValBool(v) => {
+                            self.reg_tipo = Tipo_Token::BOOL;
+                            self.reg_val = RegVal::ValBool(u & v);
+                        },
+                        _ => { panic!("And binario de booleanos apenas com booleanos"); }
+                    }
+                },
+                _ => { panic!("And binario apenas entre valores numericos inteiros e booleanos apenas."); }
+            }
+
+            //fim
+
+
+
+
         }
     }
     ///////////////////////////////////////////////////////////////////////////
     fn op_equate(&mut self) {
-        //println!("op_equate");
-        //println!("op_equate -> op_compare");
-            // TODO: semantica aqui
         self.op_compare();
-        //println!("op_equate -> op_compare_opt");
         self.op_equate_opt();
     }
     fn op_equate_opt(&mut self) {
-        //println!("op_equate_opt");
-        if self.match_token(Tipo_Token::SIMBOLO_D_IGUAL) {
-            // TODO: semantica aqui
-            self.consumir_token();
-            //println!("op_equate_opt -> expr");
-            self.expr();
-        } else if self.match_token(Tipo_Token::SIMBOLO_D_DIFERENTE) {
-            // TODO: semantica aqui
+        if self.match_token(Tipo_Token::SIMBOLO_D_IGUAL)
+            || self.match_token(Tipo_Token::SIMBOLO_D_DIFERENTE) {
+
+            let regval1 = self.reg_val.clone();
+            let op = self.tipo_atual().clone();
+
             self.consumir_token();
             self.expr();
-            //println!("op_equate_opt -> expr");
-        } else {
-            return;
+
+            let regval2 = self.reg_val.clone();
+            self.reg_tipo = Tipo_Token::BOOL;
+
+
+
+            match regval1 {
+                RegVal::ValFloat(u) => {
+                    match regval2 {
+                        RegVal::ValFloat(v) => {
+                            match op {
+                                Tipo_Token::SIMBOLO_D_IGUAL => { self.reg_val = RegVal::ValBool(u == v); },
+                                Tipo_Token::SIMBOLO_D_DIFERENTE => { self.reg_val = RegVal::ValBool(u != v); },
+                                _ => {},
+                            }
+                        },
+                        _ => { panic!("Igualdades de FLOAT apenas com FLOAT"); },
+                    }
+                },
+                RegVal::ValInt(u) => {
+                    match regval2 {
+                        RegVal::ValInt(v) => {
+                            match op {
+                                Tipo_Token::SIMBOLO_D_IGUAL => { self.reg_val = RegVal::ValBool(u == v); },
+                                Tipo_Token::SIMBOLO_D_DIFERENTE => { self.reg_val = RegVal::ValBool(u != v); },
+                                _ => {},
+                            }
+                        },
+                        _ => { panic!("Igualdades de INT apenas com INT"); },
+                    }
+                },
+                RegVal::ValBool(u) => {
+                    match regval2 {
+                        RegVal::ValBool(v) => {
+                            match op {
+                                Tipo_Token::SIMBOLO_D_IGUAL => { self.reg_val = RegVal::ValBool(u == v); },
+                                Tipo_Token::SIMBOLO_D_DIFERENTE => { self.reg_val = RegVal::ValBool(u != v); },
+                                _ => {},
+                            }
+                        },
+                        _ => { panic!("Igualdades de booleanos apenas com booleanos"); }
+                    }
+                },
+                _ => { panic!("Igualdades apenas entre valores numericos e booleanos apenas."); }
+            }
+
+
+
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     fn op_compare(&mut self) {
-        //println!("op_compare");
-        //println!("op_compare -> op_add");
-            // TODO: semantica aqui
         self.op_add();
-        //println!("op_compare -> op_compare_opt");
         self.op_compare_opt();
     }
     fn op_compare_opt(&mut self) {
-        //println!("op_compare_opt");
         if self.match_token(Tipo_Token::SIMBOLO_MENOR_Q)
             || self.match_token(Tipo_Token::SIMBOLO_MAIOR_Q)
             || self.match_token(Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q)
             || self.match_token(Tipo_Token::SIMBOLO_MENOR_IGUAL_Q)
         {
-            // TODO: semantica aqui
+
+            let regval1 = self.reg_val.clone();
+            let op = self.tipo_atual().clone();
+
             self.consumir_token();
-            //println!("op_compare_opt -> expr");
             self.expr();
+
+            let regval2 = self.reg_val.clone();
+            self.reg_tipo = Tipo_Token::BOOL;
+
+
+            match regval1 {
+                RegVal::ValFloat(u) => {
+                    match regval2 {
+                        RegVal::ValFloat(v) => {
+                            match op {
+                                Tipo_Token::SIMBOLO_MENOR_Q => { self.reg_val = RegVal::ValBool(u < v); },
+                                Tipo_Token::SIMBOLO_MAIOR_Q => { self.reg_val = RegVal::ValBool(u > v); },
+                                Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q => { self.reg_val = RegVal::ValBool(u >= v); },
+                                Tipo_Token::SIMBOLO_MENOR_IGUAL_Q => { self.reg_val = RegVal::ValBool(u <= v); },
+                                _ => {},
+                            }
+                        },
+                        _ => { panic!("Comparações de FLOAT apenas com FLOAT"); },
+                    }
+                },
+                RegVal::ValInt(u) => {
+                    match regval2 {
+                        RegVal::ValInt(v) => {
+                            match op {
+                                Tipo_Token::SIMBOLO_MENOR_Q => { self.reg_val = RegVal::ValBool(u < v); },
+                                Tipo_Token::SIMBOLO_MAIOR_Q => { self.reg_val = RegVal::ValBool(u > v); },
+                                Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q => { self.reg_val = RegVal::ValBool(u >= v); },
+                                Tipo_Token::SIMBOLO_MENOR_IGUAL_Q => { self.reg_val = RegVal::ValBool(u <= v); },
+                                _ => {},
+                            }
+                        },
+                        _ => { panic!("Comparações de INT apenas com INT"); },
+                    }
+                },
+                _ => { panic!("Comparações apenas entre valores numericos apenas."); }
+            }
+
+
+
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     fn op_add(&mut self) {
-        //println!("op_add");
-        //println!("op_add -> op_mult");
-            // TODO: semantica aqui
         self.op_mult();
-        //println!("op_add -> op_add_opt");
         self.op_add_opt();
     }
     fn op_add_opt(&mut self) {
-        //println!("op_add_opt");
         if self.match_token(Tipo_Token::SIMBOLO_MAIS) || self.match_token(Tipo_Token::SIMBOLO_MENOS)
         {
-            // TODO: semantica aqui
+
+            let regval1 = self.reg_val.clone();
+            let op = self.tipo_atual().clone();
+
             self.consumir_token();
-            //println!("op_add_opt -> expr");
             self.expr();
+
+            let regval2 = self.reg_val.clone();
+
+
+
+            match regval1 {
+                RegVal::ValFloat(u) => {
+                    match regval2 {
+                        RegVal::ValFloat(v) => {
+                            self.reg_tipo = Tipo_Token::FLOAT;
+                            match op {
+                                Tipo_Token::SIMBOLO_MAIS  => { self.reg_val = RegVal::ValFloat(u + v); },
+                                Tipo_Token::SIMBOLO_MENOS => { self.reg_val = RegVal::ValFloat(u - v); },
+                                _ => {},
+                            }
+                        },
+                        _ => { panic!("Somas de FLOAT apenas com FLOAT"); },
+                    }
+                },
+                RegVal::ValInt(u) => {
+                    match regval2 {
+                        RegVal::ValInt(v) => {
+                            self.reg_tipo = Tipo_Token::INT;
+                            match op {
+                                Tipo_Token::SIMBOLO_MAIS  => { self.reg_val = RegVal::ValInt(u + v); },
+                                Tipo_Token::SIMBOLO_MENOS => { self.reg_val = RegVal::ValInt(u - v); },
+                                _ => {},
+                            }
+                        },
+                        _ => { panic!("Somas de INT apenas com INT"); },
+                    }
+                },
+                _ => { panic!("Somas apenas entre numericos"); },
+            }
+
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     fn op_mult(&mut self) {
-        //println!("op_mult");
-        //println!("op_mult -> op_unary");
-            // TODO: semantica aqui
         self.op_unary();
-        //println!("op_mult -> op_mult_opt");
         self.op_mult_opt();
     }
     fn op_mult_opt(&mut self) {
-        //println!("op_mult_opt");
         if self.match_token(Tipo_Token::SIMBOLO_MULTI)
             || self.match_token(Tipo_Token::SIMBOLO_DIV)
             || self.match_token(Tipo_Token::SIMBOLO_MOD)
         {
-            // TODO: semantica aqui
+
+            let regval1 = self.reg_val.clone();
+            let op = self.tipo_atual().clone();
+
             self.consumir_token();
-            //println!("op_mult_opt -> expr");
             self.expr();
+
+            let regval2 = self.reg_val.clone();
+
+            match regval1 {
+                RegVal::ValFloat(u) => {
+                    match regval2 {
+                        RegVal::ValFloat(v) => {
+                            self.reg_tipo = Tipo_Token::FLOAT;
+
+                            match op {
+                                Tipo_Token::SIMBOLO_MULTI => { self.reg_val = RegVal::ValFloat(u * v); },
+                                Tipo_Token::SIMBOLO_DIV   => { self.reg_val = RegVal::ValFloat(u / v); },
+                                Tipo_Token::SIMBOLO_MOD   => { self.reg_val = RegVal::ValFloat(u % v); },
+                                _ => {},
+                            }
+
+                        }
+                        _ => { panic!("Multiplicações de FLOAT apenas com FLOAT"); },
+                    }
+                },
+                RegVal::ValInt(u) => {
+                    match regval2 {
+                        RegVal::ValInt(v) => {
+                            self.reg_tipo = Tipo_Token::INT;
+
+                            match op {
+                                Tipo_Token::SIMBOLO_MULTI => { self.reg_val = RegVal::ValInt(u * v); },
+                                Tipo_Token::SIMBOLO_DIV   => { self.reg_val = RegVal::ValInt(u / v); },
+                                Tipo_Token::SIMBOLO_MOD   => { self.reg_val = RegVal::ValInt(u % v); },
+                                _ => {},
+                            }
+
+                        }
+                        _ => { panic!("Multiplicações de INT apenas com INT"); },
+                    }
+                },
+                _ => { panic!("Multiplicações (*, /, %) apenas entre numericos"); },
+            }
+
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     fn op_unary(&mut self) {
-        //println!("op_unary");
         if self.e_unaria() {
-            // TODO: semantica aqui
+
+            let op = self.tipo_atual().clone();
+
             self.consumir_token();
-            //println!("op_unary -> expr");
             self.expr();
+
+            match op {
+
+                Tipo_Token::SIMBOLO_MENOS => {
+                    match self.reg_tipo {
+                        Tipo_Token::INT => {
+                            let val  = match self.reg_val {
+                                RegVal::ValInt(v) => v,
+                                _ => 0,
+                            };
+                            self.reg_val = RegVal::ValInt(-1 * val);
+                        }
+
+                        Tipo_Token::FLOAT => {
+                            let val  = match self.reg_val {
+                                RegVal::ValFloat(v) => v,
+                                _ => 0.0,
+                            };
+                            self.reg_val = RegVal::ValFloat(-1.0 * val);
+                        }
+
+
+                        _ => { panic!("Aplicando operador '-' a um não numerico"); },
+                    }
+                },
+
+                Tipo_Token::SIMBOLO_NOT => {
+                    match self.reg_tipo {
+                        Tipo_Token::BOOL => {
+                            let val = match self.reg_val {
+                                RegVal::ValBool(v) => v,
+                                _ => false,
+                            };
+                            self.reg_val = RegVal::ValBool(!val);
+                        },
+                        _ => {
+                            panic!("Aplicando operador '!' a um não booleano");
+                        },
+                    }
+                },
+                Tipo_Token::SIMBOLO_BIT_NOT => {
+                    match self.reg_tipo {
+                        Tipo_Token::INT => {
+                            let val = match self.reg_val {
+                                RegVal::ValInt(v) => v,
+                                _ => 0,
+                            };
+                            self.reg_val = RegVal::ValInt(!val);
+                        },
+                        _ => { panic!("Aplicando operador '~' a um não numerico inteiro"); },
+                    }
+                },
+                _ => {},
+            }
+
+
         } else {
-            //println!("op_unary -> value");
             self.value();
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     fn value(&mut self) {
-        //println!("value");
         if self.match_token(Tipo_Token::OCTAL)
             || self.match_token(Tipo_Token::HEX)
             || self.match_token(Tipo_Token::INT)
@@ -879,9 +1132,12 @@ impl Parser {
                 Tipo_Token::OCTAL => self.reg_tipo = Tipo_Token::INT,
                 Tipo_Token::HEX   => self.reg_tipo = Tipo_Token::INT,
                 Tipo_Token::INT   => self.reg_tipo = Tipo_Token::INT,
+                Tipo_Token::TRUE  => self.reg_tipo = Tipo_Token::BOOL,
+                Tipo_Token::FALSE => self.reg_tipo = Tipo_Token::BOOL,
 
                 _ => self.reg_tipo = self.tipo_atual()
             }
+
 
             // -------------------------------------------------------------------------------------------
 
@@ -890,12 +1146,10 @@ impl Parser {
         } else if self.match_token(Tipo_Token::ID) {
             // TODO: semantica aqui
             self.consumir_token();
-            //println!("value -> id_opt");
             self.id_opt();
         } else if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
             // TODO: semantica aqui
             self.consumir_token();
-            //println!("value -> expr");
             self.expr();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                 self.consumir_token();
@@ -909,19 +1163,15 @@ impl Parser {
 
     ///////////////////////////////////////////////////////////////////////////
     fn id_opt(&mut self) {
-        //println!("id_opt");
         if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
             self.consumir_token();
-            //println!("id_opt -> id_opt");
             self.id_opt_2();
         }
     }
     fn id_opt_2(&mut self) {
-        //println!("id_opt_2");
         if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
             self.consumir_token();
         } else {
-            //println!("id_opt_2 -> expr_list");
             self.expr_list();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                 self.consumir_token();
@@ -930,16 +1180,13 @@ impl Parser {
     }
 
     fn expr_list(&mut self) {
-        //println!("expr_lit -> expr");
         self.expr();
-        //println!("expr_lit -> expr_list_opt");
         self.expr_list_opt();
     }
 
     fn expr_list_opt(&mut self) {
         if self.match_token(Tipo_Token::VIRGULA) {
             self.consumir_token();
-            //println!("expr_list_opt -> expr_list");
             self.expr_list();
         }
     }

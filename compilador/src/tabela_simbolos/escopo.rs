@@ -178,8 +178,8 @@ impl ListaEscopo {
 
                 loop {
 
-                    for j in 0..self.escopos[i].entradas.len() {
-                        match self.escopos[i].entradas[j].clone() {
+                    for j in 0..self.escopos[escopo_observado].entradas.len() {
+                        match self.escopos[escopo_observado].entradas[j].clone() {
                             Simbolo::Var(_a, b, _c, _d, e) => if e == entrada { return Some(b) },
                             Simbolo::Func(_a, b, _c, _d, _e, f) => if f == entrada {return Some(b) },
                         }
@@ -199,5 +199,47 @@ impl ListaEscopo {
 
 
         return None;
+    }
+
+    pub fn existe(&self, s : Simbolo, escopo : usize) -> bool {
+
+        for i in 0..self.escopos.len() {
+            if self.escopos[i].escopo_num == escopo {
+
+                let mut escopo_observado : usize = escopo;
+                let mut ultimo_escopo_observado : usize;
+
+                loop {
+
+                    for j in 0..self.escopos[escopo_observado].entradas.len() {
+                        match self.escopos[escopo_observado].entradas[j].clone() {
+
+                            Simbolo::Var(a, _b, _c, _d, _e) => {
+                                match s.clone() {
+                                    Simbolo::Var(n, _, _, _, _) => if n == a { return true; },
+                                    Simbolo::Func(n, _, _, _, _, _) => if n == a {return true; },
+                                }
+                            },
+                            Simbolo::Func(a, _b, _c, _d, _e, _f) => {
+                                match s.clone() {
+                                    Simbolo::Var(n, _, _, _, _) => if n == a { return true; },
+                                    Simbolo::Func(n, _, _, _, _, _) => if n == a {return true; },
+                                }
+                            },
+                        }
+                    }
+
+                    ultimo_escopo_observado = escopo_observado;
+                    escopo_observado = self.pai_de(escopo_observado);
+
+                    if ultimo_escopo_observado == escopo_observado {
+                        return false;
+                    }
+
+                }
+            }
+        }
+
+        return false;
     }
 }

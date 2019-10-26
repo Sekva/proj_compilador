@@ -36,16 +36,28 @@ impl TabelaSimbolos {
 
     pub fn add_simbolo_escopo_global(&mut self, s: Simbolo) -> usize {
         self.indice_entrada += 1;
-        self.global.add_simbolo_no_indice(0, s);
+
+        let novo_s : Simbolo;
+
+        match s {
+            Simbolo::Var(_, _, _, _, _) => { panic!("variavel como funcção indo pra tabela de simbolos");},
+            Simbolo::Func(a, b, c, d, e, _f) => { novo_s = Simbolo::Func(a, b, c, d, e, self.indice_entrada - 1) },
+        }
+
+        self.global.add_simbolo_no_indice(0, novo_s);
+
         return self.indice_entrada - 1;
     }
 
     pub fn add_simbolo(&mut self, s: Simbolo) -> usize {
 
+
+
+        if self.global.existe(s.clone(), self.escopo_atual) {
+            panic!("simbolo já existe")
+        }
+
         self.indice_entrada += 1;
-
-        // TODO: verificar em escopos pai
-
 
         let novo_s : Simbolo;
 
