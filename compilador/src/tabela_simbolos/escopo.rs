@@ -64,11 +64,13 @@ impl Escopo {
         self.escopo_pai = escopo_pai;
     }
 
-    pub fn pai(&self) -> usize {
+    //TODO:
+    pub fn _pai(&self) -> usize {
         self.escopo_pai
     }
 
-    pub fn escopo_num(&self) -> usize {
+    //TODO:
+    pub fn _escopo_num(&self) -> usize {
         self.escopo_num
     }
 
@@ -76,12 +78,12 @@ impl Escopo {
         self.escopo_num = i;
     }
 
-    pub fn pegar(&self, indice: usize) -> Option<Simbolo> {
+    pub fn _pegar(&self, _indice: usize) -> Option<Simbolo> {
         None
             //TODO:
     }
 
-    pub fn atualizar(&mut self, indice: usize, simbolo: Simbolo) -> bool {
+    pub fn _atualizar(&mut self, _indice: usize, _simbolo: Simbolo) -> bool {
         false
             //TODO:
     }
@@ -168,7 +170,7 @@ impl ListaEscopo {
         }
     }
 
-    pub fn lookup(&self, entrada: usize, escopo: usize) -> Option<Tipo_Token> {
+    pub fn lookup(&self, lexema: String, escopo: usize) -> Option<Tipo_Token> {
 
         for i in 0..self.escopos.len() {
             if self.escopos[i].escopo_num == escopo {
@@ -180,8 +182,8 @@ impl ListaEscopo {
 
                     for j in 0..self.escopos[escopo_observado].entradas.len() {
                         match self.escopos[escopo_observado].entradas[j].clone() {
-                            Simbolo::Var(_a, b, _c, _d, e) => if e == entrada { return Some(b) },
-                            Simbolo::Func(_a, b, _c, _d, _e, f) => if f == entrada {return Some(b) },
+                            Simbolo::Var(a, b, _c, _d, _e) => if a == lexema { return Some(b) },
+                            Simbolo::Func(a, b, _c, _d, _e, _f) => if a == lexema {return Some(b) },
                         }
                     }
 

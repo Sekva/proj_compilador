@@ -75,7 +75,7 @@ impl TabelaSimbolos {
         self.global.printar();
     }
 
-    pub fn lookup(&self, entrada: usize) -> Option<Tipo_Token> {
-        self.global.lookup(entrada, self.escopo_atual)
+    pub fn lookup(&self, lexema: String) -> Option<Tipo_Token> {
+        self.global.lookup(lexema, self.escopo_atual)
     }
 }

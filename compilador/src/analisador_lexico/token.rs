@@ -84,7 +84,8 @@ impl Token {
         self.valor_float
     }
 
-    pub fn symtab(&self) -> u64 {
+    //TODO: dar uso ou apagar
+    pub fn _symtab(&self) -> u64 {
         self.symtab
     }
     pub fn set_symtab(&mut self, entrada: u64) {

@@ -6,9 +6,9 @@ use crate::tabela_simbolos::sym_tab::*;
 
 use colored::*;
 
-use std::fmt;
+//use std::fmt;
 
-
+/*
 #[derive(Clone, PartialEq, Debug)]
 enum RegVal {
     ValInt(i128),
@@ -34,6 +34,7 @@ impl fmt::Display for RegVal {
         write!(f, "{}", printable)
     }
 }
+*/
 
 /*
  * Expressões com mais de um operador só funcionam dois a dois, ou parenteses e tudo ok
@@ -49,8 +50,10 @@ pub struct Parser {
     indice_on_hold: usize,
     nome_funcao: String,
     reg_tipo: Tipo_Token,
-    reg_val: RegVal,
-    reg_num_params: usize,
+    reg_val: String,
+    _reg_num_params: usize, //TODO: implementar chamada de função
+    temp_num: usize,
+    comandos: Vec<String>,
 }
 
 impl Parser {
@@ -63,17 +66,26 @@ impl Parser {
             on_hold: None,
             indice_on_hold: 0,
             nome_funcao: "Global".into(),
-            reg_val: RegVal::Nop,
+            reg_val: "".to_string(),
             reg_tipo: Tipo_Token::VOID,
-            reg_num_params: 0,
+            _reg_num_params: 0,
+            temp_num: 0,
+            comandos: Vec::new(),
         }
     }
 
     pub fn iniciar_analise(&mut self) {
         self.decls();
+        //println!("aaaaaaaaaaaa {}", self.reg_val);
+        // println!("t {}", self.comandos.len());
+        for i in self.comandos.clone() {
+            println!("{}", i);
+        }
+
     }
 
-    pub fn tokens(&self) -> Vec<Token> {
+    //TODO:dar uso ou tirar
+    pub fn _tokens(&self) -> Vec<Token> {
         self.tokens.to_vec()
     }
 
@@ -89,9 +101,14 @@ impl Parser {
         self.tokens[self.token_atual].token()
     }
 
-    fn symtab_lookup(&self, entrada: usize) -> Tipo_Token {
+    fn symtab_lookup(&self, lexema: String) -> Tipo_Token {
         //TODO: melhorar erro
-        self.tabela_de_simbolos.lookup(entrada).unwrap_or_else(|| panic!("entrada não encontrada na tabela de Simbolo") )
+        self
+            .tabela_de_simbolos
+            .lookup(lexema.clone())
+            .unwrap_or_else(||
+                panic!("entrada não encontrada na tabela de Simbolo; linha: {}, variavel: {}", self.tokens[self.token_atual].linha(), lexema)
+            )
     }
 
     fn consumir_token(&mut self) {
@@ -354,7 +371,7 @@ impl Parser {
         } else {
             self.erro(";");
         }
-            println!("aaaaaaaaaaaa {}", self.reg_val);
+
     }
     fn var(&mut self) {
             // TODO: semantica aqui
@@ -368,10 +385,13 @@ impl Parser {
                 self.consumir_token();
 
                 let s = Simbolo::Var(id, self.tokens[self.token_atual].token(), self.tokens[self.token_atual].linha(), self.nome_funcao.clone(), 0);
-                self.add_direto(s, alvo);
 
                 self.t_type();
                 self.var_opt();
+
+
+                // Adicionado na tabale de simbolos só depois de avaliar
+                self.add_direto(s, alvo);
             } else {
                 self.erro("as");
             }
@@ -617,6 +637,7 @@ impl Parser {
 
     fn var_assign(&mut self) {
             // TODO: semantica aqui
+            // TODO: falta os erros
         if self.match_token(Tipo_Token::ID) {
             self.consumir_token();
             if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
@@ -629,6 +650,7 @@ impl Parser {
     ///////////////////////////////////////////////////////////////////////////
     fn expr(&mut self) {
         self.op_or();
+
     }
     ///////////////////////////////////////////////////////////////////////////
     fn op_or(&mut self) {
@@ -638,20 +660,24 @@ impl Parser {
     fn op_or_opt(&mut self) {
         if self.match_token(Tipo_Token::SIMBOLO_D_OR) {
 
-            let regval1 = self.reg_val.clone();
+            let val1 = self.reg_val.clone();
+            let tipo1 = self.reg_tipo.clone();
             let _op = self.tipo_atual().clone();
 
             self.consumir_token();
             self.expr();
 
-            let regval2 = self.reg_val.clone();
+            let val2 = self.reg_val.clone();
+            let tipo2 = self.reg_tipo.clone();
+            self.reg_tipo = Tipo_Token::BOOL;
 
-            match regval1 {
-                RegVal::ValBool(u) => {
-                    match regval2 {
-                        RegVal::ValBool(v) => {
-                            self.reg_tipo = Tipo_Token::BOOL;
-                            self.reg_val = RegVal::ValBool(u || v);
+            let string_operador = "&&".to_string();
+
+            match tipo1 {
+                Tipo_Token::ID_BOOL => {
+                    match tipo2 {
+                        Tipo_Token::ID_BOOL => {
+                            self.reg_tipo = Tipo_Token::ID_BOOL;
                         },
                         _ => { panic!("Or de booleanos apenas com booleanos"); }
                     }
@@ -659,8 +685,16 @@ impl Parser {
                 _ => { panic!("Or apenas entre booleanos."); }
             }
 
+            // fim
 
-        // fim
+
+            let var = format!("{}{}", "var__", self.temp_num);
+            self.temp_num += 1;
+            let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
+            self.comandos.push(comando);
+            self.reg_val = var;
+
+
 
 
         }
@@ -674,20 +708,24 @@ impl Parser {
     fn op_and_opt(&mut self) {
         if self.match_token(Tipo_Token::SIMBOLO_D_AND) {
 
-            let regval1 = self.reg_val.clone();
+            let val1 = self.reg_val.clone();
+            let tipo1 = self.reg_tipo.clone();
             let _op = self.tipo_atual().clone();
 
             self.consumir_token();
             self.expr();
 
-            let regval2 = self.reg_val.clone();
+            let val2 = self.reg_val.clone();
+            let tipo2 = self.reg_tipo.clone();
+            self.reg_tipo = Tipo_Token::ID_BOOL;
 
-            match regval1 {
-                RegVal::ValBool(u) => {
-                    match regval2 {
-                        RegVal::ValBool(v) => {
-                            self.reg_tipo = Tipo_Token::BOOL;
-                            self.reg_val = RegVal::ValBool(u && v);
+            let string_operador = "&&".to_string();
+
+            match tipo1 {
+                Tipo_Token::ID_BOOL => {
+                    match tipo2 {
+                        Tipo_Token::ID_BOOL => {
+                            self.reg_tipo = Tipo_Token::ID_BOOL;
                         },
                         _ => { panic!("And de booleanos apenas com booleanos"); }
                     }
@@ -695,9 +733,14 @@ impl Parser {
                 _ => { panic!("And apenas entre booleanos."); }
             }
 
+            // fim
 
-        // fim
 
+            let var = format!("{}{}", "var__", self.temp_num);
+            self.temp_num += 1;
+            let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
+            self.comandos.push(comando);
+            self.reg_val = var;
 
         }
     }
@@ -711,31 +754,32 @@ impl Parser {
         if self.match_token(Tipo_Token::SIMBOLO_OR) {
 
 
-            let regval1 = self.reg_val.clone();
+            let val1 = self.reg_val.clone();
+            let tipo1 = self.reg_tipo.clone();
             let _op = self.tipo_atual().clone();
 
             self.consumir_token();
             self.expr();
 
-            let regval2 = self.reg_val.clone();
+            let val2 = self.reg_val.clone();
+            let tipo2 = self.reg_tipo.clone();
+            self.reg_tipo = Tipo_Token::ID_BOOL;
 
+            let string_operador = "|".to_string();
 
-
-            match regval1 {
-                RegVal::ValInt(u) => {
-                    match regval2 {
-                        RegVal::ValInt(v) => {
-                            self.reg_tipo = Tipo_Token::INT;
-                            self.reg_val = RegVal::ValInt(u | v);
+            match tipo1 {
+                Tipo_Token::ID_INT => {
+                    match tipo2 {
+                        Tipo_Token::ID_INT => {
+                            self.reg_tipo = Tipo_Token::ID_INT;
                         },
                         _ => { panic!("Or binario de INT apenas com INT"); },
                     }
                 },
-                RegVal::ValBool(u) => {
-                    match regval2 {
-                        RegVal::ValBool(v) => {
-                            self.reg_tipo = Tipo_Token::BOOL;
-                            self.reg_val = RegVal::ValBool(u | v);
+                Tipo_Token::ID_BOOL => {
+                    match tipo2 {
+                        Tipo_Token::ID_BOOL => {
+                            self.reg_tipo = Tipo_Token::ID_BOOL;
                         },
                         _ => { panic!("Or binario de booleanos apenas com booleanos"); }
                     }
@@ -744,7 +788,13 @@ impl Parser {
             }
 
 
-        // fim
+            // fim
+
+            let var = format!("{}{}", "var__", self.temp_num);
+            self.temp_num += 1;
+            let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
+            self.comandos.push(comando);
+            self.reg_val = var;
 
         }
     }
@@ -756,30 +806,32 @@ impl Parser {
     fn op_bin_and_opt(&mut self) {
         if self.match_token(Tipo_Token::SIMBOLO_AND) {
 
-            let regval1 = self.reg_val.clone();
+            let val1 = self.reg_val.clone();
+            let tipo1 = self.reg_tipo.clone();
             let _op = self.tipo_atual().clone();
 
             self.consumir_token();
             self.expr();
 
-            let regval2 = self.reg_val.clone();
+            let val2 = self.reg_val.clone();
+            let tipo2 = self.reg_tipo.clone();
+            self.reg_tipo = Tipo_Token::BOOL;
 
+            let string_operador = "&".to_string();
 
-            match regval1 {
-                RegVal::ValInt(u) => {
-                    match regval2 {
-                        RegVal::ValInt(v) => {
-                            self.reg_tipo = Tipo_Token::INT;
-                            self.reg_val = RegVal::ValInt(u & v);
+            match tipo1 {
+                Tipo_Token::ID_INT => {
+                    match tipo2 {
+                        Tipo_Token::ID_INT => {
+                            self.reg_tipo = Tipo_Token::ID_INT;
                         },
                         _ => { panic!("And binario de INT apenas com INT"); },
                     }
                 },
-                RegVal::ValBool(u) => {
-                    match regval2 {
-                        RegVal::ValBool(v) => {
-                            self.reg_tipo = Tipo_Token::BOOL;
-                            self.reg_val = RegVal::ValBool(u & v);
+                Tipo_Token::ID_BOOL => {
+                    match tipo2 {
+                        Tipo_Token::ID_BOOL => {
+                            self.reg_tipo = Tipo_Token::ID_BOOL;
                         },
                         _ => { panic!("And binario de booleanos apenas com booleanos"); }
                     }
@@ -789,8 +841,11 @@ impl Parser {
 
             //fim
 
-
-
+            let var = format!("{}{}", "var__", self.temp_num);
+            self.temp_num += 1;
+            let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
+            self.comandos.push(comando);
+            self.reg_val = var;
 
         }
     }
@@ -803,48 +858,50 @@ impl Parser {
         if self.match_token(Tipo_Token::SIMBOLO_D_IGUAL)
             || self.match_token(Tipo_Token::SIMBOLO_D_DIFERENTE) {
 
-            let regval1 = self.reg_val.clone();
+            let val1 = self.reg_val.clone();
+            let tipo1 = self.reg_tipo.clone();
             let op = self.tipo_atual().clone();
 
             self.consumir_token();
             self.expr();
 
-            let regval2 = self.reg_val.clone();
-            self.reg_tipo = Tipo_Token::BOOL;
+            let val2 = self.reg_val.clone();
+            let tipo2 = self.reg_tipo.clone();
+            self.reg_tipo = Tipo_Token::ID_BOOL;
 
+            let mut string_operador = "".to_string();
 
-
-            match regval1 {
-                RegVal::ValFloat(u) => {
-                    match regval2 {
-                        RegVal::ValFloat(v) => {
+            match tipo1 {
+                Tipo_Token::ID_FLOAT => {
+                    match tipo2 {
+                        Tipo_Token::ID_FLOAT => {
                             match op {
-                                Tipo_Token::SIMBOLO_D_IGUAL => { self.reg_val = RegVal::ValBool(u == v); },
-                                Tipo_Token::SIMBOLO_D_DIFERENTE => { self.reg_val = RegVal::ValBool(u != v); },
+                                Tipo_Token::SIMBOLO_D_IGUAL => { string_operador = "==".to_string(); },
+                                Tipo_Token::SIMBOLO_D_DIFERENTE => { string_operador = "!=".to_string(); },
                                 _ => {},
                             }
                         },
                         _ => { panic!("Igualdades de FLOAT apenas com FLOAT"); },
                     }
                 },
-                RegVal::ValInt(u) => {
-                    match regval2 {
-                        RegVal::ValInt(v) => {
+                Tipo_Token::ID_INT => {
+                    match tipo2 {
+                        Tipo_Token::ID_INT => {
                             match op {
-                                Tipo_Token::SIMBOLO_D_IGUAL => { self.reg_val = RegVal::ValBool(u == v); },
-                                Tipo_Token::SIMBOLO_D_DIFERENTE => { self.reg_val = RegVal::ValBool(u != v); },
+                                Tipo_Token::SIMBOLO_D_IGUAL => { string_operador = "==".to_string(); },
+                                Tipo_Token::SIMBOLO_D_DIFERENTE => { string_operador = "!=".to_string(); },
                                 _ => {},
                             }
                         },
                         _ => { panic!("Igualdades de INT apenas com INT"); },
                     }
                 },
-                RegVal::ValBool(u) => {
-                    match regval2 {
-                        RegVal::ValBool(v) => {
+                Tipo_Token::ID_BOOL => {
+                    match tipo2 {
+                        Tipo_Token::ID_BOOL => {
                             match op {
-                                Tipo_Token::SIMBOLO_D_IGUAL => { self.reg_val = RegVal::ValBool(u == v); },
-                                Tipo_Token::SIMBOLO_D_DIFERENTE => { self.reg_val = RegVal::ValBool(u != v); },
+                                Tipo_Token::SIMBOLO_D_IGUAL => { string_operador = "==".to_string(); },
+                                Tipo_Token::SIMBOLO_D_DIFERENTE => { string_operador = "!=".to_string(); },
                                 _ => {},
                             }
                         },
@@ -854,7 +911,11 @@ impl Parser {
                 _ => { panic!("Igualdades apenas entre valores numericos e booleanos apenas."); }
             }
 
-
+            let var = format!("{}{}", "var__", self.temp_num);
+            self.temp_num += 1;
+            let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
+            self.comandos.push(comando);
+            self.reg_val = var;
 
         }
     }
@@ -871,39 +932,42 @@ impl Parser {
             || self.match_token(Tipo_Token::SIMBOLO_MENOR_IGUAL_Q)
         {
 
-            let regval1 = self.reg_val.clone();
+            let val1 = self.reg_val.clone();
+            let tipo1 = self.reg_tipo.clone();
             let op = self.tipo_atual().clone();
 
             self.consumir_token();
             self.expr();
 
-            let regval2 = self.reg_val.clone();
-            self.reg_tipo = Tipo_Token::BOOL;
+            let val2 = self.reg_val.clone();
+            let tipo2 = self.reg_tipo.clone();
+            self.reg_tipo = Tipo_Token::ID_BOOL;
 
+            let mut string_operador = "".to_string();
 
-            match regval1 {
-                RegVal::ValFloat(u) => {
-                    match regval2 {
-                        RegVal::ValFloat(v) => {
+            match tipo1 {
+                Tipo_Token::ID_FLOAT => {
+                    match tipo2 {
+                        Tipo_Token::ID_FLOAT => {
                             match op {
-                                Tipo_Token::SIMBOLO_MENOR_Q => { self.reg_val = RegVal::ValBool(u < v); },
-                                Tipo_Token::SIMBOLO_MAIOR_Q => { self.reg_val = RegVal::ValBool(u > v); },
-                                Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q => { self.reg_val = RegVal::ValBool(u >= v); },
-                                Tipo_Token::SIMBOLO_MENOR_IGUAL_Q => { self.reg_val = RegVal::ValBool(u <= v); },
+                                Tipo_Token::SIMBOLO_MENOR_Q => { string_operador = "<".to_string(); },
+                                Tipo_Token::SIMBOLO_MAIOR_Q => { string_operador = ">".to_string(); },
+                                Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q => { string_operador = ">=".to_string(); },
+                                Tipo_Token::SIMBOLO_MENOR_IGUAL_Q => { string_operador = "<=".to_string(); },
                                 _ => {},
                             }
                         },
                         _ => { panic!("Comparações de FLOAT apenas com FLOAT"); },
                     }
                 },
-                RegVal::ValInt(u) => {
-                    match regval2 {
-                        RegVal::ValInt(v) => {
+                Tipo_Token::ID_INT => {
+                    match tipo2 {
+                        Tipo_Token::ID_INT => {
                             match op {
-                                Tipo_Token::SIMBOLO_MENOR_Q => { self.reg_val = RegVal::ValBool(u < v); },
-                                Tipo_Token::SIMBOLO_MAIOR_Q => { self.reg_val = RegVal::ValBool(u > v); },
-                                Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q => { self.reg_val = RegVal::ValBool(u >= v); },
-                                Tipo_Token::SIMBOLO_MENOR_IGUAL_Q => { self.reg_val = RegVal::ValBool(u <= v); },
+                                Tipo_Token::SIMBOLO_MENOR_Q => { string_operador = "<".to_string(); },
+                                Tipo_Token::SIMBOLO_MAIOR_Q => { string_operador = ">".to_string(); },
+                                Tipo_Token::SIMBOLO_MAIOR_IGUAL_Q => { string_operador = ">=".to_string(); },
+                                Tipo_Token::SIMBOLO_MENOR_IGUAL_Q => { string_operador = "<=".to_string(); },
                                 _ => {},
                             }
                         },
@@ -912,6 +976,13 @@ impl Parser {
                 },
                 _ => { panic!("Comparações apenas entre valores numericos apenas."); }
             }
+
+
+            let var = format!("{}{}", "var__", self.temp_num);
+            self.temp_num += 1;
+            let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
+            self.comandos.push(comando);
+            self.reg_val = var;
 
 
 
@@ -927,37 +998,39 @@ impl Parser {
         if self.match_token(Tipo_Token::SIMBOLO_MAIS) || self.match_token(Tipo_Token::SIMBOLO_MENOS)
         {
 
-            let regval1 = self.reg_val.clone();
+            let tipo1 = self.reg_tipo.clone();
+            let val1 = self.reg_val.clone();
             let op = self.tipo_atual().clone();
 
             self.consumir_token();
             self.expr();
 
-            let regval2 = self.reg_val.clone();
+            let tipo2 = self.reg_tipo.clone();
+            let val2 = self.reg_val.clone();
 
+            let mut string_operador = "".to_string();
 
-
-            match regval1 {
-                RegVal::ValFloat(u) => {
-                    match regval2 {
-                        RegVal::ValFloat(v) => {
-                            self.reg_tipo = Tipo_Token::FLOAT;
+            match tipo1 {
+                Tipo_Token::ID_FLOAT => {
+                    match tipo2 {
+                        Tipo_Token::ID_INT => {
+                            self.reg_tipo = Tipo_Token::ID_FLOAT;
                             match op {
-                                Tipo_Token::SIMBOLO_MAIS  => { self.reg_val = RegVal::ValFloat(u + v); },
-                                Tipo_Token::SIMBOLO_MENOS => { self.reg_val = RegVal::ValFloat(u - v); },
+                                Tipo_Token::SIMBOLO_MAIS  => { string_operador = "+".to_string(); },
+                                Tipo_Token::SIMBOLO_MENOS => { string_operador = "-".to_string(); },
                                 _ => {},
                             }
                         },
                         _ => { panic!("Somas de FLOAT apenas com FLOAT"); },
                     }
                 },
-                RegVal::ValInt(u) => {
-                    match regval2 {
-                        RegVal::ValInt(v) => {
-                            self.reg_tipo = Tipo_Token::INT;
+                Tipo_Token::ID_INT => {
+                    match tipo2 {
+                        Tipo_Token::ID_INT => {
+                            self.reg_tipo = Tipo_Token::ID_INT;
                             match op {
-                                Tipo_Token::SIMBOLO_MAIS  => { self.reg_val = RegVal::ValInt(u + v); },
-                                Tipo_Token::SIMBOLO_MENOS => { self.reg_val = RegVal::ValInt(u - v); },
+                                Tipo_Token::SIMBOLO_MAIS  => { string_operador = "+".to_string(); },
+                                Tipo_Token::SIMBOLO_MENOS => { string_operador = "-".to_string(); },
                                 _ => {},
                             }
                         },
@@ -966,6 +1039,14 @@ impl Parser {
                 },
                 _ => { panic!("Somas apenas entre numericos"); },
             }
+
+
+            let var = format!("{}{}", "var__", self.temp_num);
+            self.temp_num += 1;
+            let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
+            self.comandos.push(comando);
+            self.reg_val = var;
+
 
         }
     }
@@ -981,24 +1062,29 @@ impl Parser {
             || self.match_token(Tipo_Token::SIMBOLO_MOD)
         {
 
-            let regval1 = self.reg_val.clone();
+            let tipo1 = self.reg_tipo.clone();
+            let val1 = self.reg_val.clone();
             let op = self.tipo_atual().clone();
 
             self.consumir_token();
             self.expr();
 
-            let regval2 = self.reg_val.clone();
+            let tipo2 = self.reg_tipo.clone();
+            let val2 = self.reg_val.clone();
 
-            match regval1 {
-                RegVal::ValFloat(u) => {
-                    match regval2 {
-                        RegVal::ValFloat(v) => {
-                            self.reg_tipo = Tipo_Token::FLOAT;
+
+            let mut string_operador = "".to_string();
+
+            match tipo1 {
+                Tipo_Token::ID_FLOAT => {
+                    match tipo2 {
+                        Tipo_Token::ID_FLOAT => {
+                            self.reg_tipo = Tipo_Token::ID_FLOAT;
 
                             match op {
-                                Tipo_Token::SIMBOLO_MULTI => { self.reg_val = RegVal::ValFloat(u * v); },
-                                Tipo_Token::SIMBOLO_DIV   => { self.reg_val = RegVal::ValFloat(u / v); },
-                                Tipo_Token::SIMBOLO_MOD   => { self.reg_val = RegVal::ValFloat(u % v); },
+                                Tipo_Token::SIMBOLO_MULTI => { string_operador = "*".to_string(); },
+                                Tipo_Token::SIMBOLO_DIV   => { string_operador = "/".to_string(); },
+                                Tipo_Token::SIMBOLO_MOD   => { string_operador = "%".to_string(); },
                                 _ => {},
                             }
 
@@ -1006,15 +1092,15 @@ impl Parser {
                         _ => { panic!("Multiplicações de FLOAT apenas com FLOAT"); },
                     }
                 },
-                RegVal::ValInt(u) => {
-                    match regval2 {
-                        RegVal::ValInt(v) => {
-                            self.reg_tipo = Tipo_Token::INT;
+                Tipo_Token::ID_INT => {
+                    match tipo2 {
+                        Tipo_Token::ID_INT => {
+                            self.reg_tipo = Tipo_Token::ID_INT;
 
                             match op {
-                                Tipo_Token::SIMBOLO_MULTI => { self.reg_val = RegVal::ValInt(u * v); },
-                                Tipo_Token::SIMBOLO_DIV   => { self.reg_val = RegVal::ValInt(u / v); },
-                                Tipo_Token::SIMBOLO_MOD   => { self.reg_val = RegVal::ValInt(u % v); },
+                                Tipo_Token::SIMBOLO_MULTI => { string_operador = "*".to_string(); },
+                                Tipo_Token::SIMBOLO_DIV   => { string_operador = "/".to_string(); },
+                                Tipo_Token::SIMBOLO_MOD   => { string_operador = "%".to_string(); },
                                 _ => {},
                             }
 
@@ -1024,6 +1110,17 @@ impl Parser {
                 },
                 _ => { panic!("Multiplicações (*, /, %) apenas entre numericos"); },
             }
+
+
+            let var = format!("{}{}", "var__", self.temp_num);
+            self.temp_num += 1;
+            let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
+            self.comandos.push(comando);
+            self.reg_val = var;
+
+
+
+
 
         }
     }
@@ -1041,20 +1138,22 @@ impl Parser {
 
                 Tipo_Token::SIMBOLO_MENOS => {
                     match self.reg_tipo {
-                        Tipo_Token::INT => {
-                            let val  = match self.reg_val {
-                                RegVal::ValInt(v) => v,
-                                _ => 0,
-                            };
-                            self.reg_val = RegVal::ValInt(-1 * val);
-                        }
+                        Tipo_Token::ID_INT => {
+                            let val = self.reg_val.clone();
+                            let var = format!("{}{}", "var__", self.temp_num);
+                            self.temp_num += 1;
+                            let comando = format!("{} := -{}", var, val);
+                            self.comandos.push(comando);
+                            self.reg_val = var;
+                       }
 
-                        Tipo_Token::FLOAT => {
-                            let val  = match self.reg_val {
-                                RegVal::ValFloat(v) => v,
-                                _ => 0.0,
-                            };
-                            self.reg_val = RegVal::ValFloat(-1.0 * val);
+                        Tipo_Token::ID_FLOAT => {
+                            let val = self.reg_val.clone();
+                            let var = format!("{}{}", "var__", self.temp_num);
+                            self.temp_num += 1;
+                            let comando = format!("{} := -{}", var, val);
+                            self.comandos.push(comando);
+                            self.reg_val = var;
                         }
 
 
@@ -1064,12 +1163,13 @@ impl Parser {
 
                 Tipo_Token::SIMBOLO_NOT => {
                     match self.reg_tipo {
-                        Tipo_Token::BOOL => {
-                            let val = match self.reg_val {
-                                RegVal::ValBool(v) => v,
-                                _ => false,
-                            };
-                            self.reg_val = RegVal::ValBool(!val);
+                        Tipo_Token::ID_BOOL => {
+                            let val = self.reg_val.clone();
+                            let var = format!("{}{}", "var__", self.temp_num);
+                            self.temp_num += 1;
+                            let comando = format!("{} := !{}", var, val);
+                            self.comandos.push(comando);
+                            self.reg_val = var;
                         },
                         _ => {
                             panic!("Aplicando operador '!' a um não booleano");
@@ -1078,12 +1178,13 @@ impl Parser {
                 },
                 Tipo_Token::SIMBOLO_BIT_NOT => {
                     match self.reg_tipo {
-                        Tipo_Token::INT => {
-                            let val = match self.reg_val {
-                                RegVal::ValInt(v) => v,
-                                _ => 0,
-                            };
-                            self.reg_val = RegVal::ValInt(!val);
+                        Tipo_Token::ID_INT => {
+                            let val = self.reg_val.clone();
+                            let var = format!("{}{}", "var__", self.temp_num);
+                            self.temp_num += 1;
+                            let comando = format!("{} := ~{}", var, val);
+                            self.comandos.push(comando);
+                            self.reg_val = var;
                         },
                         _ => { panic!("Aplicando operador '~' a um não numerico inteiro"); },
                     }
@@ -1111,29 +1212,29 @@ impl Parser {
 
             // --------------------------- Semantica -------------------------------------------------------
             match self.tipo_atual() {
-                Tipo_Token::OCTAL => self.reg_val = RegVal::ValInt(self.tokens[self.token_atual].valor_int().unwrap()),
-                Tipo_Token::HEX   => self.reg_val = RegVal::ValInt(self.tokens[self.token_atual].valor_int().unwrap()),
-                Tipo_Token::INT   => self.reg_val = RegVal::ValInt(self.tokens[self.token_atual].valor_int().unwrap()),
+                Tipo_Token::OCTAL => self.reg_val = self.tokens[self.token_atual].valor_int().unwrap().to_string(),
+                Tipo_Token::HEX   => self.reg_val = self.tokens[self.token_atual].valor_int().unwrap().to_string(),
+                Tipo_Token::INT   => self.reg_val = self.tokens[self.token_atual].valor_int().unwrap().to_string(),
 
-                Tipo_Token::STR   => self.reg_val = RegVal::ValStr(self.tokens[self.token_atual].valor_str().unwrap()),
+                Tipo_Token::STR   => self.reg_val = self.tokens[self.token_atual].valor_str().unwrap().to_string(),
 
-                Tipo_Token::CHAR  => self.reg_val = RegVal::ValChar(self.tokens[self.token_atual].valor_char().unwrap()),
+                Tipo_Token::CHAR  => self.reg_val = self.tokens[self.token_atual].valor_char().unwrap().to_string(),
 
-                Tipo_Token::FLOAT => self.reg_val = RegVal::ValFloat(self.tokens[self.token_atual].valor_float().unwrap()),
+                Tipo_Token::FLOAT => self.reg_val = self.tokens[self.token_atual].valor_float().unwrap().to_string(),
 
-                Tipo_Token::TRUE  => self.reg_val = RegVal::ValBool(self.tokens[self.token_atual].valor_bool().unwrap()),
-                Tipo_Token::FALSE => self.reg_val = RegVal::ValBool(self.tokens[self.token_atual].valor_bool().unwrap()),
+                Tipo_Token::TRUE  => self.reg_val = self.tokens[self.token_atual].valor_bool().unwrap().to_string(),
+                Tipo_Token::FALSE => self.reg_val = self.tokens[self.token_atual].valor_bool().unwrap().to_string(),
 
 
                 _ => {}
             }
 
             match self.tipo_atual() {
-                Tipo_Token::OCTAL => self.reg_tipo = Tipo_Token::INT,
-                Tipo_Token::HEX   => self.reg_tipo = Tipo_Token::INT,
-                Tipo_Token::INT   => self.reg_tipo = Tipo_Token::INT,
-                Tipo_Token::TRUE  => self.reg_tipo = Tipo_Token::BOOL,
-                Tipo_Token::FALSE => self.reg_tipo = Tipo_Token::BOOL,
+                Tipo_Token::OCTAL => self.reg_tipo = Tipo_Token::ID_INT,
+                Tipo_Token::HEX   => self.reg_tipo = Tipo_Token::ID_INT,
+                Tipo_Token::INT   => self.reg_tipo = Tipo_Token::ID_INT,
+                Tipo_Token::TRUE  => self.reg_tipo = Tipo_Token::ID_BOOL,
+                Tipo_Token::FALSE => self.reg_tipo = Tipo_Token::ID_BOOL,
 
                 _ => self.reg_tipo = self.tipo_atual()
             }
@@ -1145,10 +1246,15 @@ impl Parser {
             self.consumir_token();
         } else if self.match_token(Tipo_Token::ID) {
             // TODO: semantica aqui
+
+            let lexema = self.tokens[self.token_atual].lexema();
+            self.reg_tipo = self.symtab_lookup(lexema.clone());
+            self.reg_val = lexema;
+
             self.consumir_token();
             self.id_opt();
         } else if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
-            // TODO: semantica aqui
+            // TODO: semantica aqui?
             self.consumir_token();
             self.expr();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
