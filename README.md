@@ -12,6 +12,3 @@
 - [ ] Otimizador de Código Dependente de Máquina
 - [ ] Gerador de Código
 - [ ] Otimizador de Código Independente de Máquina
-
-## Problemas
-- Expressões por agora apenas 2 a 2, a avaliação está sendo da direita para esquerda.

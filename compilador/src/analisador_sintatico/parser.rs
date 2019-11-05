@@ -233,6 +233,85 @@ impl Parser {
             || self.match_token(Tipo_Token::SIMBOLO_BIT_NOT)
             || self.match_token(Tipo_Token::SIMBOLO_MENOS)
     }
+
+    fn preparar_expr(&mut self) {
+
+        let mut pos_relativa = 1;
+
+        let mut curr_token = Tipo_Token::VOID;
+        let mut prev_token;
+
+        while curr_token != Tipo_Token::PONTO_VIRGULA {
+            curr_token = self.tokens[self.token_atual + pos_relativa].token();
+            prev_token = self.tokens[self.token_atual + pos_relativa - 1].token();
+            let n_linha = self.tokens[self.token_atual + pos_relativa].linha();
+            pos_relativa += 1;
+
+            if curr_token == Tipo_Token::SIMBOLO_MENOS &&
+                (
+                    prev_token == Tipo_Token::OCTAL ||
+                    prev_token == Tipo_Token::HEX||
+                    prev_token == Tipo_Token::INT||
+                    prev_token == Tipo_Token::FLOAT
+                )
+
+            {
+
+                let mut injetado = Token {
+                    lexema : "+".to_string(),
+                    linha: n_linha,
+                    literal: "".to_string(),
+                    symtab: 0,
+                    token: Tipo_Token::SIMBOLO_MAIS,
+                    valor_bool: None,
+                    valor_char: None,
+                    valor_float: None,
+                    valor_int: None,
+                    valor_str: None,
+
+                };
+                self.tokens.insert(self.token_atual + pos_relativa - 1, injetado);
+
+
+                injetado = Token {
+                    lexema : "(".to_string(),
+                    token: Tipo_Token::PARENTESE_ESQUERDO,
+                    linha: n_linha,
+                    literal: "".to_string(),
+                    symtab: 0,
+                    valor_bool: None,
+                    valor_char: None,
+                    valor_float: None,
+                    valor_int: None,
+                    valor_str: None,
+                };
+
+
+                self.tokens.insert(self.token_atual + pos_relativa, injetado);
+
+
+
+                injetado = Token {
+                    lexema : ")".to_string(),
+                    token: Tipo_Token::PARENTESE_DIREITO,
+                    linha: n_linha,
+                    literal: "".to_string(),
+                    symtab: 0,
+                    valor_bool: None,
+                    valor_char: None,
+                    valor_float: None,
+                    valor_int: None,
+                    valor_str: None,
+                };
+                self.tokens.insert(self.token_atual + pos_relativa + 3, injetado);
+
+            }
+
+
+
+        }
+
+    }
     ///////////////////////////////////////////////////////////////////////////
 
     fn decls(&mut self) {
@@ -403,7 +482,7 @@ impl Parser {
             // TODO: semantica aqui
         if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
             self.consumir_token();
-            self.op_or();
+            self.expr();
         }
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -649,6 +728,7 @@ impl Parser {
 
     ///////////////////////////////////////////////////////////////////////////
     fn expr(&mut self) {
+        self.preparar_expr(); // corrigir a - b para 1 + (-b)
         self.op_or();
 
     }
