@@ -3,16 +3,16 @@ use std::fmt;
 
 #[derive(Clone)]
 pub struct Token {
-    token: Tipo_Token,
-    lexema: String,
-    literal: String,
-    linha: usize,
-    valor_bool: Option<bool>,
-    valor_char: Option<char>,
-    valor_str: Option<String>,
-    valor_int: Option<i128>,
-    valor_float: Option<f64>,
-    symtab: u64,
+    pub token: Tipo_Token,
+    pub lexema: String,
+    pub literal: String,
+    pub linha: usize,
+    pub valor_bool: Option<bool>,
+    pub valor_char: Option<char>,
+    pub valor_str: Option<String>,
+    pub valor_int: Option<i128>,
+    pub valor_float: Option<f64>,
+    pub symtab: u64,
 }
 
 impl Token {
