@@ -49,9 +49,7 @@ pub struct Parser {
     _reg_num_params: usize, //TODO: implementar chamada de função
     temp_num: usize,
     comandos: Vec<String>,
-    label_ok: String,
-    label_else: String,
-    label_fora: Vec<String>,
+    label_else: Vec<String>,
 }
 
 impl Parser {
@@ -69,9 +67,7 @@ impl Parser {
             _reg_num_params: 0,
             temp_num: 0,
             comandos: Vec::new(),
-            label_ok: "".into(),
-            label_else: "".into(),
-            label_fora: Vec::new(),
+            label_else: Vec::new(),
         }
     }
 
@@ -563,15 +559,16 @@ impl Parser {
 
 
                 // TODO: por a pilha do label else
-                self.label_ok = format!("label__{}", self.temp_num);
+                let label_ok = format!("label__{}", self.temp_num);
                 self.temp_num += 1;
-                self.label_else= format!("label__{}", self.temp_num);
+                let label_else_temp = format!("label__{}", self.temp_num);
+                self.label_else.push(label_else_temp.clone());
                 self.temp_num += 1;
                 let label_fora = format!("label__{}", self.temp_num);
                 self.temp_num += 1;
 
-                let comando_if = format!("IF {} goto {}", self.reg_val, self.label_ok.clone());
-                let comando_nao_entra_no_if = format!("goto {}", self.label_else.clone());
+                let comando_if = format!("IF {} goto {}", self.reg_val, label_ok.clone());
+                let comando_nao_entra_no_if = format!("goto {}", label_else_temp.clone());
 
                 self.comandos.push(comando_if);
                 self.comandos.push(comando_nao_entra_no_if);
@@ -581,9 +578,9 @@ impl Parser {
 
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
-                    self.comandos.push(format!("{}:", self.label_ok.clone())); // add label se entra no if
+                    self.comandos.push(format!("{}:", label_ok.clone())); // add label se entra no if
                     self.then_stm();
-                    self.comandos.push(format!("goto {}:", label_fora.clone())); // pula pra fora do if
+                    self.comandos.push(format!("goto {}", label_fora.clone())); // pula pra fora do if
                     self.if_opt();
                     self.comandos.push(format!("{}:", label_fora)); // add label se entra no if
                 } else {
@@ -632,11 +629,43 @@ impl Parser {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
+
+
+
+
                 self.expr();
+
+                if self.reg_tipo != Tipo_Token::ID_BOOL {
+                    let linha = self.tokens[self.token_atual].linha();
+                    let msg = format!("IF's apenas aceitam expressões booleanas, que não foi o caso na linha {}", linha);
+                    self.erro_generico(&msg);
+
+                }
+
+
+                // TODO: por a pilha do label else
+                let label_ok = format!("label__{}", self.temp_num);
+                self.temp_num += 1;
+                let label_else_temp = format!("label__{}", self.temp_num);
+                self.label_else.push(label_else_temp.clone());
+                self.temp_num += 1;
+                let label_fora = format!("label__{}", self.temp_num);
+                self.temp_num += 1;
+
+                let comando_if = format!("IF {} goto {}", self.reg_val, label_ok.clone());
+                let comando_nao_entra_no_if = format!("goto {}", label_else_temp.clone());
+
+                self.comandos.push(comando_if);
+                self.comandos.push(comando_nao_entra_no_if);
+
+
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
+                    self.comandos.push(format!("{}:", label_ok.clone())); // add label se entra no if
                     self.then_stm();
+                    self.comandos.push(format!("goto {}", label_fora.clone())); // pula pra fora do if
                     self.if_opt();
+                    self.comandos.push(format!("{}:", label_fora)); // add label se entra no if
                 } else {
                     self.erro(")")
                 }
@@ -676,7 +705,7 @@ impl Parser {
 
     fn if_opt(&mut self) {
         // TODO: semantica aqui
-        self.comandos.push(format!("{}:", self.label_else.clone())); // add label se NAO entra no if
+        self.comandos.push(format!("{}:", self.label_else.pop().clone().unwrap())); // add label se NAO entra no if
         if self.match_token(Tipo_Token::ELSE) {
             self.consumir_token();
             self.then_stm();
@@ -743,7 +772,7 @@ impl Parser {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
-                self.op_or();
+                self.expr();
 
 
                 let comando = format!("PRINTK {}", self.reg_val);

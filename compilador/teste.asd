@@ -1,7 +1,7 @@
 func qasd() returns bool {
 
     asd as bool;
-
+    asd = false & true;
 
     if(asd) {
         printk(1);
@@ -12,13 +12,9 @@ func qasd() returns bool {
             printk(3);
         }
 
-
-
         printk(4);
-    } else {
-        printk(5);
-    }
 
+    }
     printk(7);
 
 
