@@ -1,18 +1,28 @@
-init as int = 1;
+func qasd() returns bool {
 
-func asd() returns bool {
+    asd as bool;
 
-    qwe as bool = true;
 
-    qwe2 as int;
+    if(asd) {
+        printk(1);
 
-    if (asd == true) {
-        eeee as bool = false;
+        if(true) {
+            printk(2);
+        } else {
+            printk(3);
+        }
+
+
+
+        printk(4);
+    } else {
+        printk(5);
     }
-    if (asd == true) {
-        aeeee as bool = false;
-    }
 
-    ff = asd(x3) + 3;
+    printk(7);
+
+
+
+
+
 }
-

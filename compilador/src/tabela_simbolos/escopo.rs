@@ -47,7 +47,7 @@ impl Escopo {
 
                     Simbolo::Func(n1, _t1, _l1, _a1, _b1, _) => {
                         if n1 == n {
-                            panic!("4");
+                            panic!("função {} já declarada na linha {}", n1, _b);
                         }
                     }
                 },

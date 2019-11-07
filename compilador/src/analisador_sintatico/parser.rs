@@ -36,11 +36,6 @@ impl fmt::Display for RegVal {
 }
 */
 
-/*
- * Expressões com mais de um operador só funcionam dois a dois, ou parenteses e tudo ok
- */
-
-
 pub struct Parser {
     tokens: Vec<Token>,
     token_atual: usize,
@@ -54,6 +49,9 @@ pub struct Parser {
     _reg_num_params: usize, //TODO: implementar chamada de função
     temp_num: usize,
     comandos: Vec<String>,
+    label_ok: String,
+    label_else: String,
+    label_fora: Vec<String>,
 }
 
 impl Parser {
@@ -71,20 +69,21 @@ impl Parser {
             _reg_num_params: 0,
             temp_num: 0,
             comandos: Vec::new(),
+            label_ok: "".into(),
+            label_else: "".into(),
+            label_fora: Vec::new(),
         }
     }
 
     pub fn iniciar_analise(&mut self) {
         self.decls();
-        //println!("aaaaaaaaaaaa {}", self.reg_val);
-        // println!("t {}", self.comandos.len());
         for i in self.comandos.clone() {
             println!("{}", i);
         }
 
     }
 
-    //TODO:dar uso ou tirar
+    //TODO: dar uso ou tirar
     pub fn _tokens(&self) -> Vec<Token> {
         self.tokens.to_vec()
     }
@@ -113,6 +112,11 @@ impl Parser {
 
     fn consumir_token(&mut self) {
         self.token_atual += 1;
+    }
+
+    fn erro_generico(&self, msg: &str) {
+        println!("{}", msg);
+        std::process::exit(1);
     }
 
     fn erro(&self, token: &str) {
@@ -313,9 +317,21 @@ impl Parser {
 
     }
     ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
 
     fn decls(&mut self) {
             // TODO: semantica aqui
+
         if self.token_atual >= self.tokens.len() {
             return;
         }
@@ -326,7 +342,8 @@ impl Parser {
             self.decl();
             self.decls();
         } else {
-            self.erro("id ou func");
+            println!("APENAS DECLARAÇÃO DE FUNÇÃO OU VARIAVEL GLOBALMENTE");
+            std::process::exit(1);
         }
     }
 
@@ -443,7 +460,6 @@ impl Parser {
     }
     ///////////////////////////////////////////////////////////////////////////
     fn var_decl(&mut self) {
-            // TODO: semantica aqui
         self.var();
         if self.match_token(Tipo_Token::PONTO_VIRGULA) {
             self.consumir_token();
@@ -463,10 +479,32 @@ impl Parser {
             if self.match_token(Tipo_Token::AS) {
                 self.consumir_token();
 
-                let s = Simbolo::Var(id, self.tokens[self.token_atual].token(), self.tokens[self.token_atual].linha(), self.nome_funcao.clone(), 0);
+                let linha = self.tokens[self.token_atual].linha();
+
+                let s = Simbolo::Var(id.clone(), self.tokens[self.token_atual].token(), linha, self.nome_funcao.clone(), 0);
 
                 self.t_type();
+
+                let tipo = self.reg_tipo;
+                self.reg_tipo = Tipo_Token::VOID;
+                self.reg_val = format!("{}__NAO_DEFINIDO", tipo).into();
+
+
                 self.var_opt();
+
+                if self.reg_tipo == Tipo_Token::VOID {
+                    let comando = format!("{} := {}", id.clone(), self.reg_val);
+                    self.comandos.push(comando);
+                } else if tipo != self.reg_tipo {
+                    let msg =  format!("tipo de variavel não casa com expressão na linha {}:
+                            variavel do tipo: {}
+                            expressão do tipo: {}", linha, tipo, self.reg_tipo);
+                    self.erro_generico(&msg);
+                } else {
+                    let comando = format!("{} := {}", id.clone(), self.reg_val);
+                    self.comandos.push(comando);
+                }
+
 
 
                 // Adicionado na tabale de simbolos só depois de avaliar
@@ -487,8 +525,8 @@ impl Parser {
     }
     ///////////////////////////////////////////////////////////////////////////
     fn t_type(&mut self) {
-            // TODO: semantica aqui
         if self.id_tipo() {
+            self.reg_tipo = self.tokens[self.token_atual].token();
             self.consumir_token();
         } else {
             self.erro("indentificador de tipo");
@@ -511,17 +549,53 @@ impl Parser {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
+
+
+
                 self.expr();
+
+                if self.reg_tipo != Tipo_Token::ID_BOOL {
+                    let linha = self.tokens[self.token_atual].linha();
+                    let msg = format!("IF's apenas aceitam expressões booleanas, que não foi o caso na linha {}", linha);
+                    self.erro_generico(&msg);
+
+                }
+
+
+                // TODO: por a pilha do label else
+                self.label_ok = format!("label__{}", self.temp_num);
+                self.temp_num += 1;
+                self.label_else= format!("label__{}", self.temp_num);
+                self.temp_num += 1;
+                let label_fora = format!("label__{}", self.temp_num);
+                self.temp_num += 1;
+
+                let comando_if = format!("IF {} goto {}", self.reg_val, self.label_ok.clone());
+                let comando_nao_entra_no_if = format!("goto {}", self.label_else.clone());
+
+                self.comandos.push(comando_if);
+                self.comandos.push(comando_nao_entra_no_if);
+
+
+
+
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
+                    self.comandos.push(format!("{}:", self.label_ok.clone())); // add label se entra no if
                     self.then_stm();
+                    self.comandos.push(format!("goto {}:", label_fora.clone())); // pula pra fora do if
                     self.if_opt();
+                    self.comandos.push(format!("{}:", label_fora)); // add label se entra no if
                 } else {
                     self.erro(")");
                 }
             } else {
                 self.erro("(");
             }
+
+
+
+
         } else if self.match_token(Tipo_Token::WHILE) {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
@@ -601,7 +675,8 @@ impl Parser {
     }
 
     fn if_opt(&mut self) {
-            // TODO: semantica aqui
+        // TODO: semantica aqui
+        self.comandos.push(format!("{}:", self.label_else.clone())); // add label se NAO entra no if
         if self.match_token(Tipo_Token::ELSE) {
             self.consumir_token();
             self.then_stm();
@@ -609,11 +684,12 @@ impl Parser {
     }
 
     fn normal_stm(&mut self) {
-            // TODO: semantica aqui
+        // TODO: semantica aqui
 
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
             self.block();
         } else if self.match_token(Tipo_Token::BREAK) {
+            // TODO: adicionar semantica quando por loops
             self.consumir_token();
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
@@ -621,6 +697,7 @@ impl Parser {
                 self.erro(";");
             }
         } else if self.match_token(Tipo_Token::CONTINUE) {
+            // TODO: adicionar semantica quando por loops
             self.consumir_token();
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
@@ -628,20 +705,50 @@ impl Parser {
                 self.erro(";");
             }
         } else if self.match_token(Tipo_Token::PONTO_VIRGULA) {
+            // TODO: semantica aqui?
             self.consumir_token();
         } else if self.match_token(Tipo_Token::RETURN) {
+
+            // TODO: return pra onde? falta add o comando
             self.consumir_token();
+
+            let tipo_da_funcao = self.symtab_lookup(self.nome_funcao.clone());
+
             self.expr();
+
+            let tipo_da_expr = self.reg_tipo;
+
+            if tipo_da_expr != tipo_da_funcao {
+                let msg = format!("{} é uma função que retorna {}, mas um {} foi retornado na linha {}",
+                    self.nome_funcao,
+                    tipo_da_funcao,
+                    tipo_da_expr,
+                    self.tokens[self.token_atual].linha()
+                );
+                self.erro_generico(&msg);
+            }
+
+
+
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
             } else {
                 self.erro(";");
             }
+
+
+
         } else if self.match_token(Tipo_Token::PRINTK) {
+            // ok
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
                 self.op_or();
+
+
+                let comando = format!("PRINTK {}", self.reg_val);
+                self.comandos.push(comando);
+
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
                     if self.match_token(Tipo_Token::PONTO_VIRGULA) {
@@ -660,6 +767,8 @@ impl Parser {
             || self.match_token(Tipo_Token::ID)
             || self.match_token(Tipo_Token::PARENTESE_ESQUERDO)
         {
+            // ok
+            // aqui acho que não faz nada, o mais util aqui é chamada de função
             self.expr();
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
@@ -670,8 +779,9 @@ impl Parser {
             self.erro("normal_stm");
         }
     }
+
     fn block(&mut self) {
-            // TODO: semantica aqui
+        // TODO: semantica aqui?
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
             self.consumir_token();
 
@@ -681,8 +791,8 @@ impl Parser {
                 self.abre_escopo = true;
             }
 
-
             self.stm_list();
+
             if self.match_token(Tipo_Token::CHAVE_DIREITA) {
                 self.consumir_token();
                 self.fechar_escopo();
@@ -693,8 +803,9 @@ impl Parser {
             self.erro("{");
         }
     }
+
     fn stm_list(&mut self) {
-            // TODO: semantica aqui
+            // TODO: semantica aqui?
         if self.match_token(Tipo_Token::IF)
             || self.match_token(Tipo_Token::WHILE)
             || self.id_tipo()
@@ -715,20 +826,45 @@ impl Parser {
     }
 
     fn var_assign(&mut self) {
-            // TODO: semantica aqui
-            // TODO: falta os erros
+        // TODO: testar mais isso aqui
         if self.match_token(Tipo_Token::ID) {
+
+            let lexema_var = self.tokens[self.token_atual].lexema();
+            let tipo_var = self.symtab_lookup(lexema_var.clone());
+            let linha = self.tokens[self.token_atual].linha();
+
             self.consumir_token();
             if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
                 self.consumir_token();
                 self.expr();
+
+
+                let tipo_expr = self.reg_tipo.clone();
+                let val_expr = self.reg_val.clone();
+
+
+                if tipo_var != tipo_expr {
+                    let msg =  format!("tipo de variavel não casa com expressão na linha {}:
+                            variavel do tipo: {}
+                            expressão do tipo: {}", linha, tipo_var, tipo_expr);
+                    self.erro_generico(&msg);
+                }
+
+                let comando = format!("{} := {}", lexema_var, val_expr);
+                self.comandos.push(comando)
+
+
+            } else {
+                self.erro("=");
             }
+        } else {
+            self.erro("id");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     fn expr(&mut self) {
-        self.preparar_expr(); // corrigir a - b para 1 + (-b)
+        self.preparar_expr();
         self.op_or();
 
     }
@@ -1325,7 +1461,7 @@ impl Parser {
 
             self.consumir_token();
         } else if self.match_token(Tipo_Token::ID) {
-            // TODO: semantica aqui
+            // TODO: semantica da chamada de função aqui
 
             let lexema = self.tokens[self.token_atual].lexema();
             self.reg_tipo = self.symtab_lookup(lexema.clone());

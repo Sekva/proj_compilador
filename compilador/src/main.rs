@@ -11,6 +11,9 @@ mod tabela_simbolos;
 
 
 fn main() {
+
+    println!("\n\n");
+
     let mut lexer = lexer::Lexer::novo("teste.asd".into());
     lexer.analisar();
     let tokens = lexer.tokens();
@@ -20,6 +23,6 @@ fn main() {
 
     let mut parser = parser::Parser::novo(tokens.clone());
     parser.iniciar_analise();
-    parser.tabela_de_simbolos().printar();
+    //parser.tabela_de_simbolos().printar();
 
 }
