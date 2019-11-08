@@ -50,6 +50,8 @@ pub struct Parser {
     temp_num: usize,
     comandos: Vec<String>,
     label_else: Vec<String>,
+    while_entrs: Vec<String>,
+    while_saidas: Vec<String>,
 }
 
 impl Parser {
@@ -68,6 +70,8 @@ impl Parser {
             temp_num: 0,
             comandos: Vec::new(),
             label_else: Vec::new(),
+            while_entrs: Vec::new(),
+            while_saidas: Vec::new(),
         }
     }
 
@@ -530,7 +534,6 @@ impl Parser {
     }
     ///////////////////////////////////////////////////////////////////////////
     fn stm(&mut self) {
-            // TODO: semantica aqui
 
         if self.match_token(Tipo_Token::ID) && self.tokens[self.token_atual + 1].token() == Tipo_Token::AS { // diferenciar de uma expressão
             self.var_decl();
@@ -593,21 +596,62 @@ impl Parser {
 
 
 
-        } else if self.match_token(Tipo_Token::WHILE) {
+        }
+
+
+        else if self.match_token(Tipo_Token::WHILE) {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
                 self.expr();
+
+                if self.reg_tipo != Tipo_Token::ID_BOOL {
+                    let linha = self.tokens[self.token_atual].linha();
+                    let msg = format!("WHILE's apenas aceitam expressões booleanas, que não foi o caso na linha {}", linha);
+                    self.erro_generico(&msg);
+
+                }
+
+
+                let var_test = self.reg_val.clone();
+
+                let label_entrada_temp = format!("while__entrada__{}", self.temp_num);
+                self.temp_num += 1;
+                let label_test_temp = format!("while__test__{}", self.temp_num);
+                self.temp_num += 1;
+                let label_saida_temp = format!("while__sada__{}", self.temp_num);
+                self.temp_num += 1;
+
+                self.while_entrs.push(label_entrada_temp.clone());
+                self.while_saidas.push(label_saida_temp.clone());
+
+
+
+                self.comandos.push(format!("{}:", label_entrada_temp.clone()));
+                self.comandos.push(format!("IF {} goto {}", var_test.clone(), label_test_temp.clone()));
+                self.comandos.push(format!("goto {}", label_saida_temp.clone()));
+                self.comandos.push(format!("{}:", label_test_temp.clone()));
+
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
                     self.then_stm();
+
+                    self.comandos.push(format!("goto {}", self.while_entrs.pop().unwrap()));
+                    self.comandos.push(format!("{}:", self.while_saidas.pop().unwrap()));
+
+
                 } else {
                     self.erro(")");
                 }
             } else {
-                self.erro(")");
+                self.erro("(");
             }
-        } else if self.match_token(Tipo_Token::BREAK)
+        }
+
+
+
+
+        else if self.match_token(Tipo_Token::BREAK)
             || self.match_token(Tipo_Token::CONTINUE)
             || self.match_token(Tipo_Token::RETURN)
             || self.match_token(Tipo_Token::PRINTK)
@@ -672,21 +716,67 @@ impl Parser {
             } else {
                 self.erro("(");
             }
-        } else if self.match_token(Tipo_Token::WHILE) {
+        }
+
+
+
+
+
+        else if self.match_token(Tipo_Token::WHILE) {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
                 self.expr();
+
+                if self.reg_tipo != Tipo_Token::ID_BOOL {
+                    let linha = self.tokens[self.token_atual].linha();
+                    let msg = format!("WHILE's apenas aceitam expressões booleanas, que não foi o caso na linha {}", linha);
+                    self.erro_generico(&msg);
+
+                }
+
+
+                let var_test = self.reg_val.clone();
+
+                let label_entrada_temp = format!("while__entrada__{}", self.temp_num);
+                self.temp_num += 1;
+                let label_test_temp = format!("while__test__{}", self.temp_num);
+                self.temp_num += 1;
+                let label_saida_temp = format!("while__sada__{}", self.temp_num);
+                self.temp_num += 1;
+
+                self.while_entrs.push(label_entrada_temp.clone());
+                self.while_saidas.push(label_saida_temp.clone());
+
+
+
+                self.comandos.push(format!("{}:", label_entrada_temp.clone()));
+                self.comandos.push(format!("IF {} goto {}", var_test.clone(), label_test_temp.clone()));
+                self.comandos.push(format!("goto {}", label_saida_temp.clone()));
+                self.comandos.push(format!("{}:", label_test_temp.clone()));
+
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
                     self.then_stm();
+
+                    self.comandos.push(format!("goto {}", self.while_entrs.pop().unwrap()));
+                    self.comandos.push(format!("{}:", self.while_saidas.pop().unwrap()));
+
+
                 } else {
                     self.erro(")");
                 }
             } else {
                 self.erro("(");
             }
-        } else if self.match_token(Tipo_Token::BREAK)
+        }
+
+
+
+
+
+
+        else if self.match_token(Tipo_Token::BREAK)
             || self.match_token(Tipo_Token::CONTINUE)
             || self.match_token(Tipo_Token::RETURN)
             || self.match_token(Tipo_Token::PRINTK)
@@ -704,7 +794,6 @@ impl Parser {
     }
 
     fn if_opt(&mut self) {
-        // TODO: semantica aqui
         self.comandos.push(format!("{}:", self.label_else.pop().clone().unwrap())); // add label se NAO entra no if
         if self.match_token(Tipo_Token::ELSE) {
             self.consumir_token();
@@ -718,16 +807,20 @@ impl Parser {
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
             self.block();
         } else if self.match_token(Tipo_Token::BREAK) {
-            // TODO: adicionar semantica quando por loops
             self.consumir_token();
+            let label_saida = self.while_saidas.pop().unwrap();
+            self.comandos.push(format!("goto {}", label_saida.clone()));
+            self.while_saidas.push(label_saida);
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
             } else {
                 self.erro(";");
             }
         } else if self.match_token(Tipo_Token::CONTINUE) {
-            // TODO: adicionar semantica quando por loops
             self.consumir_token();
+            let label_entrada = self.while_entrs.pop().unwrap();
+            self.comandos.push(format!("goto {}", label_entrada.clone()));
+            self.while_entrs.push(label_entrada);
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
             } else {
