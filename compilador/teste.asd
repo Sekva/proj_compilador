@@ -1,8 +1,9 @@
+func asd(x1 as int, x2 as bool) returns char {}
+
 func qasd() returns bool {
-    while(true) {
-        printk(222);
-        if(true) {
-            printk("jivfrtgijufdrftghufdrftbhubgxes");
-        }
-    }
+
+    kk as int;
+    ww as bool;
+
+    qwe as char = asd(kk, ww);
 }

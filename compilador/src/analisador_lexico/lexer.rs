@@ -275,6 +275,10 @@ impl Lexer {
         }
         self.proximo();
 
+        if self.fonte[self.char_atual - 1] as char != '\'' {
+            panic!("Char deve ter 1 caracter só. Linha {}", self.linha);
+        }
+
         self.montar_token_2(
             Tipo_Token::CHAR,
             String::from_utf8(self.fonte[(self.comeco + 1)..(self.char_atual - 1)].to_vec())

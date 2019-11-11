@@ -28,20 +28,20 @@ impl Escopo {
                 Simbolo::Var(n, _t, _l, _a, _b) => match s.clone() {
                     Simbolo::Var(n1, _t1, _l1, _a, _b) => {
                         if n1 == n {
-                            panic!("1");
+                            panic!("escopo.rs 1");
                         }
                     }
 
                     Simbolo::Func(n1, _t1, _l1, _a1, _b1, _) => {
                         if n1 == n {
-                            panic!("2");
+                            panic!("escopo.rs 2");
                         }
                     }
                 },
                 Simbolo::Func(n, _t, _l, _a, _b, _c) => match s.clone() {
                     Simbolo::Var(n1, _t1, _l1, _, _d) => {
                         if n1 == n {
-                            panic!("3");
+                            panic!("escopo.rs 3");
                         }
                     }
 
@@ -201,6 +201,20 @@ impl ListaEscopo {
 
 
         return None;
+    }
+
+
+    pub fn lista_params(&self, lexema: String) -> Option<Vec<Tipo_Token>> {
+
+        for j in 0..self.escopos[0].entradas.len() {
+            match self.escopos[0].entradas[j].clone() {
+                Simbolo::Var(a, _b, _c, _d, _e) => if a == lexema { panic!("{} não é uma função", lexema); },
+                Simbolo::Func(a, _b, _c, d, _e, _f) => if a == lexema {return Some(d) },
+            }
+
+        }
+
+        None
     }
 
     pub fn existe(&self, s : Simbolo, escopo : usize) -> bool {

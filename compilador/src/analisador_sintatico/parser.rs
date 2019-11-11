@@ -46,12 +46,15 @@ pub struct Parser {
     nome_funcao: String,
     reg_tipo: Tipo_Token,
     reg_val: String,
-    _reg_num_params: usize, //TODO: implementar chamada de função
     temp_num: usize,
     comandos: Vec<String>,
     label_else: Vec<String>,
     while_entrs: Vec<String>,
     while_saidas: Vec<String>,
+
+    pilha_params: Vec<(String, Tipo_Token)>,
+    num_params_passado: usize,
+    funcao: bool,
 }
 
 impl Parser {
@@ -66,12 +69,15 @@ impl Parser {
             nome_funcao: "Global".into(),
             reg_val: "".to_string(),
             reg_tipo: Tipo_Token::VOID,
-            _reg_num_params: 0,
             temp_num: 0,
             comandos: Vec::new(),
             label_else: Vec::new(),
             while_entrs: Vec::new(),
             while_saidas: Vec::new(),
+
+            pilha_params: Vec::new(),
+            num_params_passado: 0,
+            funcao: false,
         }
     }
 
@@ -107,6 +113,13 @@ impl Parser {
             .lookup(lexema.clone())
             .unwrap_or_else(||
                 panic!("entrada não encontrada na tabela de Simbolo; linha: {}, variavel: {}", self.tokens[self.token_atual].linha(), lexema)
+            )
+    }
+
+    fn buscar_funcao_params(&self, lexema: String) -> Vec<Tipo_Token> {
+        //TODO: melhorar erro
+        self.tabela_de_simbolos.lista_params(lexema.clone()).unwrap_or_else(||
+                panic!("função não encontrada na tabela de Simbolo; linha: {}, chamada por: {}", self.tokens[self.token_atual].linha(), lexema)
             )
     }
 
@@ -362,6 +375,9 @@ impl Parser {
             // TODO: semantica aqui
         if self.match_token(Tipo_Token::FUNC) {
 
+            self.comandos.push("".into());
+            self.comandos.push("".into());
+
             self.abrir_escopo();
             self.abre_escopo = false;
             self.on_hold = Some(Simbolo::Func("".into(), Tipo_Token::VOID, 0, vec![], 0, 0));
@@ -382,6 +398,8 @@ impl Parser {
             } else {
                 self.erro("indentificador");
             }
+            self.comandos.push("".into());
+            self.comandos.push("".into());
         } else {
             self.erro("func");
         }
@@ -1554,9 +1572,9 @@ impl Parser {
                 Tipo_Token::HEX   => self.reg_val = self.tokens[self.token_atual].valor_int().unwrap().to_string(),
                 Tipo_Token::INT   => self.reg_val = self.tokens[self.token_atual].valor_int().unwrap().to_string(),
 
-                Tipo_Token::STR   => self.reg_val = self.tokens[self.token_atual].valor_str().unwrap().to_string(),
+                Tipo_Token::STR   => self.reg_val = format!("\"{}\"", self.tokens[self.token_atual].valor_str().unwrap().to_string()),
 
-                Tipo_Token::CHAR  => self.reg_val = self.tokens[self.token_atual].valor_char().unwrap().to_string(),
+                Tipo_Token::CHAR  => self.reg_val = format!("\'{}\'", self.tokens[self.token_atual].valor_char().unwrap().to_string()),
 
                 Tipo_Token::FLOAT => self.reg_val = self.tokens[self.token_atual].valor_float().unwrap().to_string(),
 
@@ -1573,6 +1591,8 @@ impl Parser {
                 Tipo_Token::INT   => self.reg_tipo = Tipo_Token::ID_INT,
                 Tipo_Token::TRUE  => self.reg_tipo = Tipo_Token::ID_BOOL,
                 Tipo_Token::FALSE => self.reg_tipo = Tipo_Token::ID_BOOL,
+                Tipo_Token::STR   => self.reg_tipo = Tipo_Token::ID_STR,
+                Tipo_Token::CHAR  => self.reg_tipo = Tipo_Token::ID_CHAR,
 
                 _ => self.reg_tipo = self.tipo_atual()
             }
@@ -1586,13 +1606,73 @@ impl Parser {
             // TODO: semantica da chamada de função aqui
 
             let lexema = self.tokens[self.token_atual].lexema();
-            self.reg_tipo = self.symtab_lookup(lexema.clone());
-            self.reg_val = lexema;
+            let linha = self.tokens[self.token_atual].linha();
+            let tipo = self.symtab_lookup(lexema.clone());
+            let val = lexema.clone();
 
             self.consumir_token();
             self.id_opt();
+
+
+            if self.funcao {
+
+                self.reg_tipo = tipo;
+
+                let lista_params_definidos = self.buscar_funcao_params(lexema.clone());
+                let num_params_definido = lista_params_definidos.len();
+
+                if num_params_definido != self.num_params_passado {
+                    let msg = format!("{} tem {} parametros, mas foram passados {} parametros. Linha {}",
+                        lexema.clone(),
+                        num_params_definido,
+                        self.num_params_passado,
+                        linha
+                    );
+                    self.erro_generico(&msg);
+                }
+
+
+                for i in 0..lista_params_definidos.len() {
+
+                    if lista_params_definidos[i] != self.pilha_params[i].1 {
+                        let msg = format!("parametro numero {} da função {} com tipo errado, função recebe {} mas {} foi passado. linha {}",
+                            i+1,
+                            lexema.clone(),
+                            lista_params_definidos[i],
+                            self.pilha_params[i].1,
+                            linha
+                        );
+                        self.erro_generico(&msg);
+                    }
+
+                }
+
+
+                self.pilha_params.reverse();
+                for i in self.pilha_params.clone() {
+                    self.comandos.push(format!("param {}", i.0));
+                }
+
+                let var = format!("{}{}", "var__", self.temp_num);
+                self.temp_num += 1;
+
+                self.comandos.push(format!("call {}, {}", val.clone(), self.num_params_passado));
+                self.comandos.push(format!("{} := ret__reg", var));
+                self.reg_val = var;
+                self.funcao = false;
+
+                self.pilha_params = Vec::new();
+                self.num_params_passado = 0;
+
+
+
+            } else {
+                self.reg_tipo = tipo;
+                self.reg_val = val;
+            }
+
+
         } else if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
-            // TODO: semantica aqui?
             self.consumir_token();
             self.expr();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
@@ -1610,6 +1690,7 @@ impl Parser {
         if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
             self.consumir_token();
             self.id_opt_2();
+            self.funcao = true;
         }
     }
     fn id_opt_2(&mut self) {
@@ -1625,7 +1706,9 @@ impl Parser {
 
     fn expr_list(&mut self) {
         self.expr();
+        self.pilha_params.push((self.reg_val.clone(), self.reg_tipo.clone()));
         self.expr_list_opt();
+        self.num_params_passado += 1;
     }
 
     fn expr_list_opt(&mut self) {

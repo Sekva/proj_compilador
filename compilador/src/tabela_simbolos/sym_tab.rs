@@ -78,4 +78,8 @@ impl TabelaSimbolos {
     pub fn lookup(&self, lexema: String) -> Option<Tipo_Token> {
         self.global.lookup(lexema, self.escopo_atual)
     }
+
+    pub fn lista_params(&self, lexema: String) -> Option<Vec<Tipo_Token>> {
+        self.global.lista_params(lexema)
+    }
 }
