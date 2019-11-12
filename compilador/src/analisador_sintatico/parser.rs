@@ -372,7 +372,6 @@ impl Parser {
     }
     ///////////////////////////////////////////////////////////////////////////
     fn func_decl(&mut self) {
-            // TODO: semantica aqui
         if self.match_token(Tipo_Token::FUNC) {
 
             self.comandos.push("".into());
@@ -387,6 +386,8 @@ impl Parser {
 
                 self.set_nome_on_hold();
                 self.indice_on_hold = self.token_atual;
+
+                self.comandos.push(format!("{}:", self.tokens[self.token_atual].lexema()));
 
                 self.consumir_token();
                 if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
@@ -535,7 +536,6 @@ impl Parser {
         }
     }
     fn var_opt(&mut self) {
-            // TODO: semantica aqui
         if self.match_token(Tipo_Token::SIMBOLO_IGUAL) {
             self.consumir_token();
             self.expr();
@@ -567,8 +567,6 @@ impl Parser {
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
 
-
-
                 self.expr();
 
                 if self.reg_tipo != Tipo_Token::ID_BOOL {
@@ -578,8 +576,6 @@ impl Parser {
 
                 }
 
-
-                // TODO: por a pilha do label else
                 let label_ok = format!("label__{}", self.temp_num);
                 self.temp_num += 1;
                 let label_else_temp = format!("label__{}", self.temp_num);
@@ -593,8 +589,6 @@ impl Parser {
 
                 self.comandos.push(comando_if);
                 self.comandos.push(comando_nao_entra_no_if);
-
-
 
 
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
@@ -686,14 +680,10 @@ impl Parser {
         }
     }
     fn then_stm(&mut self) {
-            // TODO: semantica aqui
         if self.match_token(Tipo_Token::IF) {
             self.consumir_token();
             if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                 self.consumir_token();
-
-
-
 
                 self.expr();
 
@@ -704,8 +694,6 @@ impl Parser {
 
                 }
 
-
-                // TODO: por a pilha do label else
                 let label_ok = format!("label__{}", self.temp_num);
                 self.temp_num += 1;
                 let label_else_temp = format!("label__{}", self.temp_num);
@@ -735,10 +723,6 @@ impl Parser {
                 self.erro("(");
             }
         }
-
-
-
-
 
         else if self.match_token(Tipo_Token::WHILE) {
             self.consumir_token();
@@ -790,10 +774,6 @@ impl Parser {
         }
 
 
-
-
-
-
         else if self.match_token(Tipo_Token::BREAK)
             || self.match_token(Tipo_Token::CONTINUE)
             || self.match_token(Tipo_Token::RETURN)
@@ -820,8 +800,6 @@ impl Parser {
     }
 
     fn normal_stm(&mut self) {
-        // TODO: semantica aqui
-
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
             self.block();
         } else if self.match_token(Tipo_Token::BREAK) {
@@ -845,38 +823,41 @@ impl Parser {
                 self.erro(";");
             }
         } else if self.match_token(Tipo_Token::PONTO_VIRGULA) {
-            // TODO: semantica aqui?
             self.consumir_token();
         } else if self.match_token(Tipo_Token::RETURN) {
 
-            // TODO: return pra onde? falta add o comando
+            // TODO: testar mais
             self.consumir_token();
 
             let tipo_da_funcao = self.symtab_lookup(self.nome_funcao.clone());
 
-            self.expr();
+            if tipo_da_funcao != Tipo_Token::ID_VOID {
 
-            let tipo_da_expr = self.reg_tipo;
+                self.expr();
 
-            if tipo_da_expr != tipo_da_funcao {
-                let msg = format!("{} é uma função que retorna {}, mas um {} foi retornado na linha {}",
-                    self.nome_funcao,
-                    tipo_da_funcao,
-                    tipo_da_expr,
-                    self.tokens[self.token_atual].linha()
-                );
-                self.erro_generico(&msg);
+                let tipo_da_expr = self.reg_tipo;
+
+                if tipo_da_expr != tipo_da_funcao {
+                    let msg = format!("{} é uma função que retorna {}, mas um {} foi retornado na linha {}",
+                        self.nome_funcao,
+                        tipo_da_funcao,
+                        tipo_da_expr,
+                        self.tokens[self.token_atual].linha()
+                    );
+                    self.erro_generico(&msg);
+                }
+
+                self.comandos.push(format!("ret__reg := {}", self.reg_val));
+
             }
 
-
+            self.comandos.push("ret".into());
 
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
             } else {
                 self.erro(";");
             }
-
-
 
         } else if self.match_token(Tipo_Token::PRINTK) {
             // ok
@@ -921,7 +902,6 @@ impl Parser {
     }
 
     fn block(&mut self) {
-        // TODO: semantica aqui?
         if self.match_token(Tipo_Token::CHAVE_ESQUERDA) {
             self.consumir_token();
 
@@ -945,7 +925,6 @@ impl Parser {
     }
 
     fn stm_list(&mut self) {
-            // TODO: semantica aqui?
         if self.match_token(Tipo_Token::IF)
             || self.match_token(Tipo_Token::WHILE)
             || self.id_tipo()
@@ -1004,7 +983,11 @@ impl Parser {
 
     ///////////////////////////////////////////////////////////////////////////
     fn expr(&mut self) {
-        self.preparar_expr();
+
+        if !self.match_token(Tipo_Token::PONTO_VIRGULA) {
+            self.preparar_expr();
+        }
+
         self.op_or();
 
     }
@@ -1603,7 +1586,6 @@ impl Parser {
 
             self.consumir_token();
         } else if self.match_token(Tipo_Token::ID) {
-            // TODO: semantica da chamada de função aqui
 
             let lexema = self.tokens[self.token_atual].lexema();
             let linha = self.tokens[self.token_atual].linha();
