@@ -55,6 +55,7 @@ pub struct Parser {
     pilha_params: Vec<(String, Tipo_Token)>,
     num_params_passado: usize,
     funcao: bool,
+    return_check: bool,
 }
 
 impl Parser {
@@ -78,6 +79,7 @@ impl Parser {
             pilha_params: Vec::new(),
             num_params_passado: 0,
             funcao: false,
+            return_check: false,
         }
     }
 
@@ -381,18 +383,30 @@ impl Parser {
             self.abre_escopo = false;
             self.on_hold = Some(Simbolo::Func("".into(), Tipo_Token::VOID, 0, vec![], 0, 0));
 
+            self.return_check = true;
+
             self.consumir_token();
             if self.match_token(Tipo_Token::ID) {
 
                 self.set_nome_on_hold();
                 self.indice_on_hold = self.token_atual;
 
-                self.comandos.push(format!("{}:", self.tokens[self.token_atual].lexema()));
+                self.comandos.push(format!("FUNC__CALL__{}:", self.tokens[self.token_atual].lexema()));
+                let linha = self.tokens[self.token_atual].linha();
 
                 self.consumir_token();
                 if self.match_token(Tipo_Token::PARENTESE_ESQUERDO) {
                     self.consumir_token();
                     self.func_params_opt();
+
+
+                    if self.return_check {
+                        let msg = format!("Funcao nao retornou, funcao declarada na linha {}", linha);
+                        self.erro_generico(&msg);
+                    }
+
+
+                    self.comandos.push(format!("RET"));
                 } else {
                     self.erro("(");
                 }
@@ -406,7 +420,6 @@ impl Parser {
         }
     }
     fn func_params_opt(&mut self) {
-            // TODO: semantica aqui
         if self.match_token(Tipo_Token::ID) {
             self.params();
             if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
@@ -417,6 +430,7 @@ impl Parser {
                     self.set_tipo_on_hold();
                     self.add_simbolo();
 
+                    if self.match_token(Tipo_Token::ID_VOID) { self.return_check = false; }
                     self.t_type();
                     self.block();
                     self.nome_funcao = "Global".into();
@@ -443,23 +457,23 @@ impl Parser {
         }
     }
     fn params(&mut self) {
-            // TODO: semantica aqui
         self.param();
         self.params_opt();
     }
     fn params_opt(&mut self) {
-            // TODO: semantica aqui
         if self.match_token(Tipo_Token::VIRGULA) {
             self.consumir_token();
             self.params();
         }
     }
     fn param(&mut self) {
-            // TODO: semantica aqui
         if self.match_token(Tipo_Token::ID) {
 
             let id = self.tokens[self.token_atual].lexema();
             let alvo = self.token_atual;
+
+            self.comandos.push(format!("{} := POP__PARAM", id));
+
 
             self.consumir_token();
             if self.match_token(Tipo_Token::AS) {
@@ -576,16 +590,16 @@ impl Parser {
 
                 }
 
-                let label_ok = format!("label__{}", self.temp_num);
+                let label_ok = format!("LABEL__{}", self.temp_num);
                 self.temp_num += 1;
-                let label_else_temp = format!("label__{}", self.temp_num);
+                let label_else_temp = format!("LABEL__{}", self.temp_num);
                 self.label_else.push(label_else_temp.clone());
                 self.temp_num += 1;
-                let label_fora = format!("label__{}", self.temp_num);
+                let label_fora = format!("LABEL__{}", self.temp_num);
                 self.temp_num += 1;
 
-                let comando_if = format!("IF {} goto {}", self.reg_val, label_ok.clone());
-                let comando_nao_entra_no_if = format!("goto {}", label_else_temp.clone());
+                let comando_if = format!("IF {} GOTO {}", self.reg_val, label_ok.clone());
+                let comando_nao_entra_no_if = format!("GOTO {}", label_else_temp.clone());
 
                 self.comandos.push(comando_if);
                 self.comandos.push(comando_nao_entra_no_if);
@@ -595,7 +609,7 @@ impl Parser {
                     self.consumir_token();
                     self.comandos.push(format!("{}:", label_ok.clone())); // add label se entra no if
                     self.then_stm();
-                    self.comandos.push(format!("goto {}", label_fora.clone())); // pula pra fora do if
+                    self.comandos.push(format!("GOTO {}", label_fora.clone())); // pula pra fora do if
                     self.if_opt();
                     self.comandos.push(format!("{}:", label_fora)); // add label se entra no if
                 } else {
@@ -627,11 +641,11 @@ impl Parser {
 
                 let var_test = self.reg_val.clone();
 
-                let label_entrada_temp = format!("while__entrada__{}", self.temp_num);
+                let label_entrada_temp = format!("WHILE__ENTRADA__{}", self.temp_num);
                 self.temp_num += 1;
-                let label_test_temp = format!("while__test__{}", self.temp_num);
+                let label_test_temp = format!("WHILE__TEST__{}", self.temp_num);
                 self.temp_num += 1;
-                let label_saida_temp = format!("while__sada__{}", self.temp_num);
+                let label_saida_temp = format!("WHILE__SADA__{}", self.temp_num);
                 self.temp_num += 1;
 
                 self.while_entrs.push(label_entrada_temp.clone());
@@ -640,15 +654,15 @@ impl Parser {
 
 
                 self.comandos.push(format!("{}:", label_entrada_temp.clone()));
-                self.comandos.push(format!("IF {} goto {}", var_test.clone(), label_test_temp.clone()));
-                self.comandos.push(format!("goto {}", label_saida_temp.clone()));
+                self.comandos.push(format!("IF {} GOTO {}", var_test.clone(), label_test_temp.clone()));
+                self.comandos.push(format!("GOTO {}", label_saida_temp.clone()));
                 self.comandos.push(format!("{}:", label_test_temp.clone()));
 
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
                     self.then_stm();
 
-                    self.comandos.push(format!("goto {}", self.while_entrs.pop().unwrap()));
+                    self.comandos.push(format!("GOTO {}", self.while_entrs.pop().unwrap()));
                     self.comandos.push(format!("{}:", self.while_saidas.pop().unwrap()));
 
 
@@ -694,16 +708,16 @@ impl Parser {
 
                 }
 
-                let label_ok = format!("label__{}", self.temp_num);
+                let label_ok = format!("LABEL__{}", self.temp_num);
                 self.temp_num += 1;
-                let label_else_temp = format!("label__{}", self.temp_num);
+                let label_else_temp = format!("LABEL__{}", self.temp_num);
                 self.label_else.push(label_else_temp.clone());
                 self.temp_num += 1;
-                let label_fora = format!("label__{}", self.temp_num);
+                let label_fora = format!("LABEL__{}", self.temp_num);
                 self.temp_num += 1;
 
-                let comando_if = format!("IF {} goto {}", self.reg_val, label_ok.clone());
-                let comando_nao_entra_no_if = format!("goto {}", label_else_temp.clone());
+                let comando_if = format!("IF {} GOTO {}", self.reg_val, label_ok.clone());
+                let comando_nao_entra_no_if = format!("GOTO {}", label_else_temp.clone());
 
                 self.comandos.push(comando_if);
                 self.comandos.push(comando_nao_entra_no_if);
@@ -713,7 +727,7 @@ impl Parser {
                     self.consumir_token();
                     self.comandos.push(format!("{}:", label_ok.clone())); // add label se entra no if
                     self.then_stm();
-                    self.comandos.push(format!("goto {}", label_fora.clone())); // pula pra fora do if
+                    self.comandos.push(format!("GOTO {}", label_fora.clone())); // pula pra fora do if
                     self.if_opt();
                     self.comandos.push(format!("{}:", label_fora)); // add label se entra no if
                 } else {
@@ -740,11 +754,11 @@ impl Parser {
 
                 let var_test = self.reg_val.clone();
 
-                let label_entrada_temp = format!("while__entrada__{}", self.temp_num);
+                let label_entrada_temp = format!("WHILE__ENTRADA__{}", self.temp_num);
                 self.temp_num += 1;
-                let label_test_temp = format!("while__test__{}", self.temp_num);
+                let label_test_temp = format!("WHILE__TEST__{}", self.temp_num);
                 self.temp_num += 1;
-                let label_saida_temp = format!("while__sada__{}", self.temp_num);
+                let label_saida_temp = format!("WHILE__SADA__{}", self.temp_num);
                 self.temp_num += 1;
 
                 self.while_entrs.push(label_entrada_temp.clone());
@@ -753,15 +767,15 @@ impl Parser {
 
 
                 self.comandos.push(format!("{}:", label_entrada_temp.clone()));
-                self.comandos.push(format!("IF {} goto {}", var_test.clone(), label_test_temp.clone()));
-                self.comandos.push(format!("goto {}", label_saida_temp.clone()));
+                self.comandos.push(format!("IF {} GOTO {}", var_test.clone(), label_test_temp.clone()));
+                self.comandos.push(format!("GOTO {}", label_saida_temp.clone()));
                 self.comandos.push(format!("{}:", label_test_temp.clone()));
 
                 if self.match_token(Tipo_Token::PARENTESE_DIREITO) {
                     self.consumir_token();
                     self.then_stm();
 
-                    self.comandos.push(format!("goto {}", self.while_entrs.pop().unwrap()));
+                    self.comandos.push(format!("GOTO {}", self.while_entrs.pop().unwrap()));
                     self.comandos.push(format!("{}:", self.while_saidas.pop().unwrap()));
 
 
@@ -805,7 +819,7 @@ impl Parser {
         } else if self.match_token(Tipo_Token::BREAK) {
             self.consumir_token();
             let label_saida = self.while_saidas.pop().unwrap();
-            self.comandos.push(format!("goto {}", label_saida.clone()));
+            self.comandos.push(format!("GOTO {}", label_saida.clone()));
             self.while_saidas.push(label_saida);
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
@@ -815,7 +829,7 @@ impl Parser {
         } else if self.match_token(Tipo_Token::CONTINUE) {
             self.consumir_token();
             let label_entrada = self.while_entrs.pop().unwrap();
-            self.comandos.push(format!("goto {}", label_entrada.clone()));
+            self.comandos.push(format!("GOTO {}", label_entrada.clone()));
             self.while_entrs.push(label_entrada);
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
@@ -825,6 +839,9 @@ impl Parser {
         } else if self.match_token(Tipo_Token::PONTO_VIRGULA) {
             self.consumir_token();
         } else if self.match_token(Tipo_Token::RETURN) {
+
+
+            self.return_check = false;
 
             // TODO: testar mais
             self.consumir_token();
@@ -847,11 +864,11 @@ impl Parser {
                     self.erro_generico(&msg);
                 }
 
-                self.comandos.push(format!("ret__reg := {}", self.reg_val));
+                self.comandos.push(format!("RET__REG := {}", self.reg_val));
 
             }
 
-            self.comandos.push("ret".into());
+            self.comandos.push("RET".into());
 
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
@@ -1027,7 +1044,7 @@ impl Parser {
             // fim
 
 
-            let var = format!("{}{}", "var__", self.temp_num);
+            let var = format!("{}{}", "VAR__", self.temp_num);
             self.temp_num += 1;
             let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
             self.comandos.push(comando);
@@ -1075,7 +1092,7 @@ impl Parser {
             // fim
 
 
-            let var = format!("{}{}", "var__", self.temp_num);
+            let var = format!("{}{}", "VAR__", self.temp_num);
             self.temp_num += 1;
             let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
             self.comandos.push(comando);
@@ -1129,7 +1146,7 @@ impl Parser {
 
             // fim
 
-            let var = format!("{}{}", "var__", self.temp_num);
+            let var = format!("{}{}", "VAR__", self.temp_num);
             self.temp_num += 1;
             let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
             self.comandos.push(comando);
@@ -1180,7 +1197,7 @@ impl Parser {
 
             //fim
 
-            let var = format!("{}{}", "var__", self.temp_num);
+            let var = format!("{}{}", "VAR__", self.temp_num);
             self.temp_num += 1;
             let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
             self.comandos.push(comando);
@@ -1250,7 +1267,7 @@ impl Parser {
                 _ => { panic!("Igualdades apenas entre valores numericos e booleanos apenas."); }
             }
 
-            let var = format!("{}{}", "var__", self.temp_num);
+            let var = format!("{}{}", "VAR__", self.temp_num);
             self.temp_num += 1;
             let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
             self.comandos.push(comando);
@@ -1317,7 +1334,7 @@ impl Parser {
             }
 
 
-            let var = format!("{}{}", "var__", self.temp_num);
+            let var = format!("{}{}", "VAR__", self.temp_num);
             self.temp_num += 1;
             let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
             self.comandos.push(comando);
@@ -1380,7 +1397,7 @@ impl Parser {
             }
 
 
-            let var = format!("{}{}", "var__", self.temp_num);
+            let var = format!("{}{}", "VAR__", self.temp_num);
             self.temp_num += 1;
             let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
             self.comandos.push(comando);
@@ -1451,7 +1468,7 @@ impl Parser {
             }
 
 
-            let var = format!("{}{}", "var__", self.temp_num);
+            let var = format!("{}{}", "VAR__", self.temp_num);
             self.temp_num += 1;
             let comando = format!("{} := {} {} {}", var, val1, string_operador, val2);
             self.comandos.push(comando);
@@ -1479,7 +1496,7 @@ impl Parser {
                     match self.reg_tipo {
                         Tipo_Token::ID_INT => {
                             let val = self.reg_val.clone();
-                            let var = format!("{}{}", "var__", self.temp_num);
+                            let var = format!("{}{}", "VAR__", self.temp_num);
                             self.temp_num += 1;
                             let comando = format!("{} := -{}", var, val);
                             self.comandos.push(comando);
@@ -1488,7 +1505,7 @@ impl Parser {
 
                         Tipo_Token::ID_FLOAT => {
                             let val = self.reg_val.clone();
-                            let var = format!("{}{}", "var__", self.temp_num);
+                            let var = format!("{}{}", "VAR__", self.temp_num);
                             self.temp_num += 1;
                             let comando = format!("{} := -{}", var, val);
                             self.comandos.push(comando);
@@ -1504,7 +1521,7 @@ impl Parser {
                     match self.reg_tipo {
                         Tipo_Token::ID_BOOL => {
                             let val = self.reg_val.clone();
-                            let var = format!("{}{}", "var__", self.temp_num);
+                            let var = format!("{}{}", "VAR__", self.temp_num);
                             self.temp_num += 1;
                             let comando = format!("{} := !{}", var, val);
                             self.comandos.push(comando);
@@ -1519,7 +1536,7 @@ impl Parser {
                     match self.reg_tipo {
                         Tipo_Token::ID_INT => {
                             let val = self.reg_val.clone();
-                            let var = format!("{}{}", "var__", self.temp_num);
+                            let var = format!("{}{}", "VAR__", self.temp_num);
                             self.temp_num += 1;
                             let comando = format!("{} := ~{}", var, val);
                             self.comandos.push(comando);
@@ -1632,14 +1649,14 @@ impl Parser {
 
                 self.pilha_params.reverse();
                 for i in self.pilha_params.clone() {
-                    self.comandos.push(format!("param {}", i.0));
+                    self.comandos.push(format!("PARAM {}", i.0));
                 }
 
-                let var = format!("{}{}", "var__", self.temp_num);
+                let var = format!("{}{}", "VAR__", self.temp_num);
                 self.temp_num += 1;
 
-                self.comandos.push(format!("call {}, {}", val.clone(), self.num_params_passado));
-                self.comandos.push(format!("{} := ret__reg", var));
+                self.comandos.push(format!("CALL FUNC__CALL__{}, {}", val.clone(), self.num_params_passado));
+                self.comandos.push(format!("{} := RET__REG", var));
                 self.reg_val = var;
                 self.funcao = false;
 
