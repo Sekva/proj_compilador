@@ -7,8 +7,8 @@
 ## Etapas
 - [x] Analisador Léxico
 - [x] Analisador Sintático
-- [ ] Analisador Semântico
-- [ ] Gerador de Código Intermediário
+- [x] Analisador Semântico
+- [x] Gerador de Código Intermediário
 - [ ] Otimizador de Código Dependente de Máquina
 - [ ] Gerador de Código
 - [ ] Otimizador de Código Independente de Máquina
