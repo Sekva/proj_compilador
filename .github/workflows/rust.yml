@@ -10,6 +10,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build
-      run: cargo build --verbose
+      run: cd compilador; cargo build --verbose; cd ..
     - name: Run tests
-      run: cargo test --verbose
+      run: cd compilador; cargo test --verbose; cd ..
