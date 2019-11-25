@@ -1032,9 +1032,9 @@ impl Parser {
 
             let val2 = self.reg_val.clone();
             let tipo2 = self.reg_tipo.clone();
-            self.reg_tipo = Tipo_Token::BOOL;
+            self.reg_tipo = Tipo_Token::ID_BOOL;
 
-            let string_operador = "&&".to_string();
+            let string_operador = "||".to_string();
 
             match tipo1 {
                 Tipo_Token::ID_BOOL => {
@@ -1178,7 +1178,7 @@ impl Parser {
 
             let val2 = self.reg_val.clone();
             let tipo2 = self.reg_tipo.clone();
-            self.reg_tipo = Tipo_Token::BOOL;
+            self.reg_tipo = Tipo_Token::ID_BOOL;
 
             let string_operador = "&".to_string();
 
@@ -1376,7 +1376,7 @@ impl Parser {
             match tipo1 {
                 Tipo_Token::ID_FLOAT => {
                     match tipo2 {
-                        Tipo_Token::ID_INT => {
+                        Tipo_Token::ID_FLOAT => {
                             self.reg_tipo = Tipo_Token::ID_FLOAT;
                             match op {
                                 Tipo_Token::SIMBOLO_MAIS  => { string_operador = "+".to_string(); },
