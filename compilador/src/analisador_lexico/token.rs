@@ -34,8 +34,16 @@ impl Token {
                 Tipo_Token::INT => opt_int = Some(temp_literal.parse::<i128>().unwrap()),
                 Tipo_Token::FLOAT => opt_float = Some(temp_literal.parse::<f64>().unwrap()),
 
-                Tipo_Token::HEX => opt_int = Some(i128::from_str_radix(temp_literal.trim_start_matches("0x"), 16).unwrap()),
-                Tipo_Token::OCTAL => opt_int = Some(i128::from_str_radix(temp_literal.trim_start_matches("0x"), 16).unwrap()),
+                Tipo_Token::HEX => {
+                    opt_int = Some(
+                        i128::from_str_radix(temp_literal.trim_start_matches("0x"), 16).unwrap(),
+                    )
+                }
+                Tipo_Token::OCTAL => {
+                    opt_int = Some(
+                        i128::from_str_radix(temp_literal.trim_start_matches("0x"), 16).unwrap(),
+                    )
+                }
 
                 _ => {}
             }

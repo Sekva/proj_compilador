@@ -1,8 +1,8 @@
-use crate::tabela_simbolos::simbolo::Simbolo;
 use crate::analisador_lexico::tipo_token::*;
+use crate::tabela_simbolos::simbolo::Simbolo;
 
-use prettytable::Table;
 use colored::*;
+use prettytable::Table;
 
 #[derive(Clone, PartialEq)]
 pub struct Escopo {
@@ -80,19 +80,24 @@ impl Escopo {
 
     pub fn _pegar(&self, _indice: usize) -> Option<Simbolo> {
         None
-            //TODO:
+        //TODO:
     }
 
     pub fn _atualizar(&mut self, _indice: usize, _simbolo: Simbolo) -> bool {
         false
-            //TODO:
+        //TODO:
     }
 
     pub fn printar(&self) {
+        if self.entradas.len() == 0 {
+            return;
+        }
 
-        if self.entradas.len() == 0 { return; }
-
-        println!("\n\nEscopo numero {}, filho de {}", self.escopo_num.to_string().green(), self.escopo_pai.to_string().purple());
+        println!(
+            "\n\nEscopo numero {}, filho de {}",
+            self.escopo_num.to_string().green(),
+            self.escopo_pai.to_string().purple()
+        );
         let mut table = Table::new();
         table.set_titles(row!["NOME", "TIPO", "F/V", "PARAMS", "LINHA", "ENTRADA"]);
         //table.add_row(row!["NOME", "TIPO", "F/V", "PARAMS", "LINHA", "ENTRADA"]);
@@ -100,7 +105,6 @@ impl Escopo {
         let mut nome_func: String = "".into();
 
         for i in 0..self.entradas.len() {
-
             match self.entradas[i].clone() {
                 Simbolo::Func(nome, tipo, n_params, _params, linha, entrada) => {
                     table.add_row(row![nome, tipo, "F", n_params, linha, entrada]);
@@ -110,7 +114,6 @@ impl Escopo {
                     nome_func = func_nome.clone();
                 }
             }
-
         }
 
         //table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
@@ -171,19 +174,24 @@ impl ListaEscopo {
     }
 
     pub fn lookup(&self, lexema: String, escopo: usize) -> Option<Tipo_Token> {
-
         for i in 0..self.escopos.len() {
             if self.escopos[i].escopo_num == escopo {
-
-                let mut escopo_observado : usize = escopo;
-                let mut ultimo_escopo_observado : usize;
+                let mut escopo_observado: usize = escopo;
+                let mut ultimo_escopo_observado: usize;
 
                 loop {
-
                     for j in 0..self.escopos[escopo_observado].entradas.len() {
                         match self.escopos[escopo_observado].entradas[j].clone() {
-                            Simbolo::Var(a, b, _c, _d, _e) => if a == lexema { return Some(b) },
-                            Simbolo::Func(a, b, _c, _d, _e, _f) => if a == lexema {return Some(b) },
+                            Simbolo::Var(a, b, _c, _d, _e) => {
+                                if a == lexema {
+                                    return Some(b);
+                                }
+                            }
+                            Simbolo::Func(a, b, _c, _d, _e, _f) => {
+                                if a == lexema {
+                                    return Some(b);
+                                }
+                            }
                         }
                     }
 
@@ -193,53 +201,63 @@ impl ListaEscopo {
                     if ultimo_escopo_observado == escopo_observado {
                         return None;
                     }
-
                 }
             }
         }
 
-
-
         return None;
     }
 
-
     pub fn lista_params(&self, lexema: String) -> Option<Vec<Tipo_Token>> {
-
         for j in 0..self.escopos[0].entradas.len() {
             match self.escopos[0].entradas[j].clone() {
-                Simbolo::Var(a, _b, _c, _d, _e) => if a == lexema { panic!("{} não é uma função", lexema); },
-                Simbolo::Func(a, _b, _c, d, _e, _f) => if a == lexema {return Some(d) },
+                Simbolo::Var(a, _b, _c, _d, _e) => {
+                    if a == lexema {
+                        panic!("{} não é uma função", lexema);
+                    }
+                }
+                Simbolo::Func(a, _b, _c, d, _e, _f) => {
+                    if a == lexema {
+                        return Some(d);
+                    }
+                }
             }
-
         }
 
         None
     }
 
-    pub fn existe(&self, s : Simbolo, escopo : usize) -> bool {
-
+    pub fn existe(&self, s: Simbolo, escopo: usize) -> bool {
         for i in 0..self.escopos.len() {
             if self.escopos[i].escopo_num == escopo {
-
-                let mut escopo_observado : usize = escopo;
-                let mut ultimo_escopo_observado : usize;
+                let mut escopo_observado: usize = escopo;
+                let mut ultimo_escopo_observado: usize;
 
                 loop {
-
                     for j in 0..self.escopos[escopo_observado].entradas.len() {
                         match self.escopos[escopo_observado].entradas[j].clone() {
-
-                            Simbolo::Var(a, _b, _c, _d, _e) => {
-                                match s.clone() {
-                                    Simbolo::Var(n, _, _, _, _) => if n == a { return true; },
-                                    Simbolo::Func(n, _, _, _, _, _) => if n == a {return true; },
+                            Simbolo::Var(a, _b, _c, _d, _e) => match s.clone() {
+                                Simbolo::Var(n, _, _, _, _) => {
+                                    if n == a {
+                                        return true;
+                                    }
+                                }
+                                Simbolo::Func(n, _, _, _, _, _) => {
+                                    if n == a {
+                                        return true;
+                                    }
                                 }
                             },
-                            Simbolo::Func(a, _b, _c, _d, _e, _f) => {
-                                match s.clone() {
-                                    Simbolo::Var(n, _, _, _, _) => if n == a { return true; },
-                                    Simbolo::Func(n, _, _, _, _, _) => if n == a {return true; },
+                            Simbolo::Func(a, _b, _c, _d, _e, _f) => match s.clone() {
+                                Simbolo::Var(n, _, _, _, _) => {
+                                    if n == a {
+                                        return true;
+                                    }
+                                }
+                                Simbolo::Func(n, _, _, _, _, _) => {
+                                    if n == a {
+                                        return true;
+                                    }
                                 }
                             },
                         }
@@ -251,7 +269,6 @@ impl ListaEscopo {
                     if ultimo_escopo_observado == escopo_observado {
                         return false;
                     }
-
                 }
             }
         }

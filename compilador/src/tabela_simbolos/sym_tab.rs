@@ -1,5 +1,5 @@
-use crate::tabela_simbolos::escopo::*;
 use crate::analisador_lexico::tipo_token::*;
+use crate::tabela_simbolos::escopo::*;
 
 use crate::tabela_simbolos::simbolo::Simbolo;
 
@@ -37,11 +37,15 @@ impl TabelaSimbolos {
     pub fn add_simbolo_escopo_global(&mut self, s: Simbolo) -> usize {
         self.indice_entrada += 1;
 
-        let novo_s : Simbolo;
+        let novo_s: Simbolo;
 
         match s {
-            Simbolo::Var(_, _, _, _, _) => { panic!("variavel como funcção indo pra tabela de simbolos");},
-            Simbolo::Func(a, b, c, d, e, _f) => { novo_s = Simbolo::Func(a, b, c, d, e, self.indice_entrada - 1) },
+            Simbolo::Var(_, _, _, _, _) => {
+                panic!("variavel como funcção indo pra tabela de simbolos");
+            }
+            Simbolo::Func(a, b, c, d, e, _f) => {
+                novo_s = Simbolo::Func(a, b, c, d, e, self.indice_entrada - 1)
+            }
         }
 
         self.global.add_simbolo_no_indice(0, novo_s);
@@ -50,20 +54,21 @@ impl TabelaSimbolos {
     }
 
     pub fn add_simbolo(&mut self, s: Simbolo) -> usize {
-
-
-
         if self.global.existe(s.clone(), self.escopo_atual) {
             panic!("simbolo já existe")
         }
 
         self.indice_entrada += 1;
 
-        let novo_s : Simbolo;
+        let novo_s: Simbolo;
 
         match s {
-            Simbolo::Var(a, b, c, d, _e) => { novo_s = Simbolo::Var(a, b, c, d, self.indice_entrada - 1)},
-            Simbolo::Func(a, b, c, d, e, _f) => { novo_s = Simbolo::Func(a, b, c, d, e, self.indice_entrada - 1) },
+            Simbolo::Var(a, b, c, d, _e) => {
+                novo_s = Simbolo::Var(a, b, c, d, self.indice_entrada - 1)
+            }
+            Simbolo::Func(a, b, c, d, e, _f) => {
+                novo_s = Simbolo::Func(a, b, c, d, e, self.indice_entrada - 1)
+            }
         }
 
         self.global.add_simbolo_no_indice(self.escopo_atual, novo_s);

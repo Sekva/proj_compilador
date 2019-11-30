@@ -8,14 +8,12 @@ mod tabela_simbolos;
 
 mod otimizador;
 
-#[macro_use] extern crate prettytable;
-
+#[macro_use]
+extern crate prettytable;
 
 use std::env;
 
-
 fn main() {
-
     println!("\n\n");
 
     let mut lexer = lexer::Lexer::novo("teste.asd".into());
@@ -34,13 +32,17 @@ fn main() {
         }
     }
 
-
     let mut otimim = 0;
     for arg in env::args() {
-        if arg == "-O0" { otimim = 0; }
-        else if arg == "-O1" { otimim = 1; }
-        else if arg == "-O2" { otimim = 2; }
-        else if arg == "-O3" { otimim = 3; }
+        if arg == "-O0" {
+            otimim = 0;
+        } else if arg == "-O1" {
+            otimim = 1;
+        } else if arg == "-O2" {
+            otimim = 2;
+        } else if arg == "-O3" {
+            otimim = 3;
+        }
     }
 
     let mut otimizador = otimizador::otimizador::Otimizador::novo(otimim, parser.programa());
@@ -54,7 +56,4 @@ fn main() {
             }
         }
     }
-
-
-
 }

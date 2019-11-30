@@ -1,9 +1,20 @@
-func asd(x1 as int, x2 as bool) returns char {}
+func max(x1 as float, x2 as float) returns float {
 
-func qasd() returns bool {
+    if(x1 > x2) {
+        return x1;
+    }
 
-    kk as int;
-    ww as bool;
+    return x2;
 
-    qwe as char = asd(kk, ww);
+}
+
+func qasd(aa as bool) returns float {
+
+    kk as float;
+    ww as float;
+
+    qwe as float= max(kk, ww);
+
+    return qwe;
+
 }
