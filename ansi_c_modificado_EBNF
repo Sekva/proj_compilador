@@ -33,7 +33,7 @@
 <Op_Add_Opt> -> + <Expr> | - <Expr> | EPSILON
 <Op_Mult> -> <Op_Unary> <Op_Mult_Opt>
 <Op_Mult_Opt> -> * <Expr> | : <Expr> | % <Expr> | EPSILON
-<Op_Unary> -> !  <Expr> | ~  <Expr> | -  <Expr> | <Value>
+<Op_Unary> -> !  <Expr> | ~  <Expr> | - <Expr> | <Value>
 <Value> -> <OctLiteral> | <HexLiteral> | <DecLiteral> | <StringLiteral> | <CharLiteral> | <FloatLiteral> | <BoolLiteral> | <Id> <Id_Opt> | ( <Expr> )
 <Id_Opt> -> ( <Id_Opt2> | EPSILON
 <Id_Opt2> -> <Expr_List> ) | )

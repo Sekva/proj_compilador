@@ -13,6 +13,8 @@ func qasd(aa as bool) returns float {
     kk as float;
     ww as float;
 
+    continue;
+
     qwe as float= max(kk, ww);
 
     return qwe;

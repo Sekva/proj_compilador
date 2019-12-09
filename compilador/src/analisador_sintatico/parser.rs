@@ -864,10 +864,12 @@ impl Parser {
             self.block();
         } else if self.match_token(Tipo_Token::BREAK) {
             self.consumir_token();
-            let label_saida = self.while_saidas.pop().unwrap();
-            self.comandos
-                .push((format!("GOTO {}", label_saida.clone()), TipoComando::Goto));
-            self.while_saidas.push(label_saida);
+            if !self.while_saidas.is_empty() {
+                let label_saida = self.while_saidas.pop().unwrap();
+                self.comandos
+                    .push((format!("GOTO {}", label_saida.clone()), TipoComando::Goto));
+                self.while_saidas.push(label_saida);
+            }
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
             } else {
@@ -875,10 +877,12 @@ impl Parser {
             }
         } else if self.match_token(Tipo_Token::CONTINUE) {
             self.consumir_token();
-            let label_entrada = self.while_entrs.pop().unwrap();
-            self.comandos
-                .push((format!("GOTO {}", label_entrada.clone()), TipoComando::Goto));
-            self.while_entrs.push(label_entrada);
+            if !self.while_entrs.is_empty() {
+                let label_entrada = self.while_entrs.pop().unwrap();
+                self.comandos
+                    .push((format!("GOTO {}", label_entrada.clone()), TipoComando::Goto));
+                self.while_entrs.push(label_entrada);
+            }
             if self.match_token(Tipo_Token::PONTO_VIRGULA) {
                 self.consumir_token();
             } else {
