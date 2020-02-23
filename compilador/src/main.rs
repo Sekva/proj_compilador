@@ -11,7 +11,11 @@ mod otimizador;
 #[macro_use]
 extern crate prettytable;
 
+use prettytable::Table;
 use std::env;
+
+mod gerador_de_codigo;
+use crate::gerador_de_codigo::Codigo;
 
 fn main() {
     println!("\n\n");
@@ -51,9 +55,20 @@ fn main() {
 
     for arg in env::args() {
         if arg == "-p" {
+            let mut table = Table::new();
+            table.set_titles(row!["COD", "cod op", "tipo"]);
             for i in programa.clone() {
-                println!("{}", i);
+                if i.0 != "" {
+                    table.add_row(row![i.0, i.1, i.2]);
+                    //println!("{} --- {:?} --- {}\n", i.0, i.1, i.2);
+                }
             }
+            table.printstd();
         }
     }
+
+    let mut gerador = Codigo::novo();
+    let saida = gerador.gerar(programa.clone());
+
+    println!("{}", saida);
 }

@@ -1,22 +1,14 @@
-func max(x1 as float, x2 as float) returns float {
+func start() returns void {
 
-    if(x1 > x2) {
-        return x1;
-    }
+    asd as int = 2;
+    qwe as int = 4;
 
-    return x2;
+    fgh as int = asd + qwe;
 
-}
+    fgh = 7;
 
-func qasd(aa as bool) returns float {
+    printk(fgh);
 
-    kk as float;
-    ww as float;
 
-    continue;
-
-    qwe as float= max(kk, ww);
-
-    return qwe;
-
+    return;
 }

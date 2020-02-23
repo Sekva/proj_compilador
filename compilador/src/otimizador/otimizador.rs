@@ -1,3 +1,7 @@
+use crate::analisador_lexico::tipo_token::*;
+
+use std::fmt;
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum TipoComando {
     Goto,
@@ -8,6 +12,21 @@ pub enum TipoComando {
     Printk,
     Call,
     Funcao,
+    Op,
+    Nop,
+    Assign,
+    Assign_POP,
+    Param,
+    CloseFrame,
+    OpenFrame,
+}
+
+impl fmt::Display for TipoComando {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+        // or, alternatively:
+        // fmt::Debug::fmt(self, f)
+    }
 }
 
 fn strip_characters(original: &str, to_strip: &str) -> String {
@@ -21,21 +40,19 @@ fn strip_characters(original: &str, to_strip: &str) -> String {
 }
 
 pub struct Otimizador {
-    programa: Vec<(String, TipoComando)>,
+    programa: Vec<(String, TipoComando, Tipo_Token)>,
     nivel: usize,
 }
 
 impl Otimizador {
-    pub fn novo(nivel: usize, programa: Vec<(String, TipoComando)>) -> Otimizador {
+    pub fn novo(nivel: usize, programa: Vec<(String, TipoComando, Tipo_Token)>) -> Otimizador {
         Otimizador {
             programa: programa,
             nivel: nivel,
         }
     }
 
-    pub fn otimizar(&mut self) -> Vec<String> {
-        let mut novo_programa = Vec::new();
-
+    pub fn otimizar(&mut self) -> Vec<(String, TipoComando, Tipo_Token)> {
         if self.nivel == 1 {
             self.remover_rets(); // tira um ret acima do outro
             self.remover_gotos_desnecessarios(); //gera labels nao usados
@@ -43,15 +60,11 @@ impl Otimizador {
             self.gotos_non_sense();
         }
 
-        for i in self.programa.clone() {
-            novo_programa.push(i.0);
-        }
-
-        novo_programa
+        self.programa.clone()
     }
 
     fn remover_rets(&mut self) {
-        let mut novo_programa: Vec<(String, TipoComando)> = Vec::new();
+        let mut novo_programa: Vec<(String, TipoComando, Tipo_Token)> = Vec::new();
         for i in 1..self.programa.len() {
             if !(self.programa[i].1 == TipoComando::Ret
                 && self.programa[i - 1].1 == TipoComando::Ret)
